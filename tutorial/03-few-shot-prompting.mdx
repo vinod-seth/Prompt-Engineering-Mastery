@@ -1,0 +1,80 @@
+# Lesson 2.1: Few-Shot Prompting & In-Context Learning
+
+Sometimes, writing instructions is not enough. Explaining tone, formatting nuances, or complex classification logic in words can lead to long, confusing prompts that LLMs fail to follow. 
+
+The solution is **In-Context Learning (Few-Shot Prompting)**: showing the model exactly what you want using structural examples.
+
+---
+
+## 1. Zero-Shot vs. Few-Shot Prompting
+
+* **Zero-Shot Prompting:** You give the model an instruction and an input, and expect it to execute without seeing any examples.
+  * *Example:* "Translate this word into pirate slang: 'Hello'."
+* **Few-Shot Prompting:** You provide one or more examples of inputs and their corresponding desired outputs before giving the final input.
+  * *Example:*
+    ```
+    Input: Hello -> Output: Ahoy matey!
+    Input: Yes -> Output: Aye!
+    Input: Goodbye -> Output:
+    ```
+
+---
+
+## 2. When to Use Few-Shot Prompting
+
+Few-shot prompting is highly effective when:
+* **Complex formatting is required:** For example, turning messy text into custom code blocks or specific layout structures.
+* **The output tone is subjective:** Rather than telling the model to be "humorous yet professional," provide 3 examples of what that sounds like.
+* **Dealing with edge cases:** Showing how to handle missing data or weird inputs.
+
+---
+
+## 3. Designing High-Quality Examples
+
+When writing examples for a few-shot prompt, follow these guidelines:
+1. **Consistency:** Keep the formatting of input/output tokens identical between examples.
+2. **Diversity:** Show different types of inputs so the model doesn't overfit to a single pattern.
+3. **Randomness:** Do not order all positive reviews first and negative reviews second; mix them to avoid bias.
+
+### Example: Custom Sentiment Categorizer
+```text
+Task: Classify customer emails into one of three categories: [Refund], [Support], [Praise].
+
+Example 1:
+Input: "Hi, I bought the shoes yesterday but they are too tight. Can I send them back?"
+Output: [Refund]
+
+Example 2:
+Input: "You guys are amazing! The customer care team helped me out in minutes."
+Output: [Praise]
+
+Example 3:
+Input: "Where is the settings button on the dashboard? I cannot find it."
+Output: [Support]
+
+Input: "My order has not arrived yet. It has been three weeks. What is going on?"
+Output:
+```
+
+---
+
+import Quiz from './components/Quiz.jsx';
+
+<Quiz
+  question="Why would a project manager choose few-shot prompting over zero-shot prompting when formatting weekly meeting logs?"
+  options={[
+    "Because few-shot prompts consume fewer API tokens.",
+    "Because the LLM needs to see exact output examples to match the custom bulleted hierarchy and shorthand labels used by the company.",
+    "Because few-shot prompts automatically run faster on the API servers.",
+    "Because zero-shot prompting is only compatible with creative tasks."
+  ]}
+  answerIndex={1}
+  explanation="In-context examples show the model the exact stylistic layout, hierarchy, and shorthand terminology needed. Instructions alone often result in the model using standard browser defaults instead of the company's specific style guide."
+/>
+
+---
+
+## 🚀 What's Next?
+Now that you can program models using examples, click below to see how to force models to think logically through multi-step reasoning.
+
+* [Lesson 2.2: Reasoned Prompting (Chain of Thought)](./04-reasoned-prompting.mdx)

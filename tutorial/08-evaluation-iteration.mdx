@@ -1,0 +1,62 @@
+# Lesson 4.2: Evaluation & Iteration
+
+When a prompt works well on your first test case, it's easy to assume it's ready. However, in production pipelines, user inputs vary wildly. A prompt that works for a 500-word article might hallucinate or crash when fed a 5,000-word document, a non-English query, or empty files.
+
+In this lesson, we study **Prompt Evaluation** to test and optimize prompts systematically.
+
+---
+
+## 1. The Prompt Evaluation Matrix
+
+Instead of judging prompts by "vibes," build an evaluation matrix. Test your prompts against a diverse test suite (usually 10 to 50 sample inputs representing different scenarios).
+
+Create a grading rubric based on three criteria:
+1. **Accuracy/Adherence (0-5):** Did the model follow all formatting guidelines and constraints?
+2. **Completeness (0-5):** Did it capture all critical facts and extract all required variables?
+3. **Format Validity (Pass/Fail):** Was the JSON schema broken? Did it contain conversational preamble?
+
+---
+
+## 2. Testing Against Edge Cases
+
+When designing prompts for automation, actively test them against these three common failure modes:
+
+* **Empty Inputs:** What happens if the file upload is blank?
+  * *Fix:* Add system instruction: *"If input context is empty or unreadable, reply with: [ERR_EMPTY_CONTEXT] and stop."*
+* **Language Swaps:** What happens if a user inputs Spanish into a English-only pipeline?
+  * *Fix:* Ensure the system prompt sets linguistic boundaries or translates first.
+* **Adversarial Inputs (Jailbreaks):** Users trying to force the bot to output offensive content.
+  * *Fix:* Use delimiters and regression test against known jailbreak prompts.
+
+---
+
+## 3. The Iteration Cycle
+
+```text
+Draft Prompt ──> Test on 20 Inputs ──> Score Outputs ──> Identify Failure Modes ──> Refine Guidelines ──> Repeat
+```
+
+Never edit a prompt to fix a single bug without re-running your entire test suite. Fixing a bug for Customer A might break the formatting rules for Customers B, C, and D (this is called **Prompt Regression**).
+
+---
+
+import Quiz from './components/Quiz.jsx';
+
+<Quiz
+  question="What is prompt regression?"
+  options={[
+    "When a model gets slower at generating tokens over time.",
+    "When updating a prompt to fix a specific output bug accidentally breaks its ability to handle other previously working test cases.",
+    "When you change the model temperature from 0.0 to 1.0.",
+    "When an API key expires during database writes."
+  ]}
+  answerIndex={1}
+  explanation="Prompt regression occurs when local prompt edits cause global style or schema changes, breaking existing parts of your pipeline. Systematic evaluation matrices prevent this by checking changes against all test cases."
+/>
+
+---
+
+## 🚀 What's Next?
+You have finished all lessons in Course 1! Now it's time to build your hands-on capstone project.
+
+* [🎓 Hands-on Capstone Project: The Automated Enterprise Content Engine](./09-capstone-project.mdx)

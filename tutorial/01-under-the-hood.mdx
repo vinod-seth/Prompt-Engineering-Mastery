@@ -1,0 +1,73 @@
+# Lesson 1.1: Under the Hood of an LLM
+
+To command Large Language Models programmatically, you must first understand the fundamental engineering constraints that govern their behavior. An LLM is not an active, reasoning human mind—it is a **probabilistic token prediction engine**.
+
+---
+
+## 1. Tokens vs. Words
+
+LLMs do not read text letter-by-letter or word-by-word. Instead, they process text in fragments called **tokens**.
+
+* A token can be a single character, a sub-word, or an entire word.
+* **Rule of thumb:** In English, 1 token is roughly equivalent to **4 characters** or **0.75 words**. 
+* For example, the word `"unbelievable"` is split by tokenizer algorithms into three tokens: `["un", "believ", "able"]`.
+
+Understanding tokens is critical because:
+1. **Billing:** API providers (like Google Cloud or OpenAI) bill you directly per thousand tokens input and output.
+2. **Context Limits:** Models have strict memory ceilings measured in tokens, not words.
+
+---
+
+## 2. Context Windows: The LLM Memory Bank
+
+The **Context Window** represents the total amount of tokens a model can process in a single transaction (including your prompt, system instructions, and the model's response).
+
+* If a model has a context window of **8,000 tokens**, sending a prompt containing a 10,000-token PDF will cause the model to either reject the request or completely forget the earliest parts of the document.
+* Modern models (like Gemini 1.5 Pro) feature massive context windows (up to 2 million tokens), allowing you to upload entire codebases or hours of audio files.
+
+---
+
+## 3. Controlling Randomness: Temperature and Top-P
+
+When an LLM predicts the next token, it generates a list of potential candidates, each with a probability score. We adjust these parameters to modify the randomness of the model's choices:
+
+### Temperature (0.0 to 2.0)
+* **Low Temperature (close to 0.0):** The model always picks the absolute highest-probability tokens. This makes outputs **predictable, logical, and highly structured**. Ideal for JSON generation, coding, and factual translation.
+* **High Temperature (above 1.0):** The model occasionally selects lower-probability tokens. This increases variety, creativity, and "originality." Ideal for brainstorming, creative writing, and marketing copy.
+
+### Top-P (Nucleus Sampling)
+* Controls the pool of tokens the model considers based on their cumulative probability.
+* For example, a Top-P of `0.1` means the model only chooses from the top 10% of most likely tokens. A Top-P of `1.0` lets the model choose from the entire vocabulary.
+
+---
+
+## ⚙️ How to Adjust System Parameters
+
+| Task Type | Recommended Temperature | Recommended Top-P | Reason |
+| :--- | :--- | :--- | :--- |
+| **JSON Data Extraction** | `0.0` or `0.1` | `0.1` | Avoid hallucinating fields or breaking schemas. |
+| **Email Copy Draft** | `0.7` | `0.9` | Balance engaging narrative structure with factual accuracy. |
+| **Creative Story Generation**| `1.2` | `1.0` | Maximize lexical diversity and unexpected plot points. |
+
+---
+
+import Quiz from './components/Quiz.jsx';
+
+<Quiz
+  question="You are writing a Python pipeline to extract customer details from raw emails and format them as strict JSON objects. Which settings should you choose?"
+  options={[
+    "Temperature = 1.5, Top-P = 1.0",
+    "Temperature = 0.0, Top-P = 0.1",
+    "Temperature = 0.8, Top-P = 0.9",
+    "Temperature = 2.0, Top-P = 0.5"
+  ]}
+  answerIndex={1}
+  explanation="When outputting strict formats like JSON, you need high predictability. Setting a low temperature (0.0) and top-p (0.1) forces the model to choose only the most probable structural tokens, minimizing schema breakage."
+/>
+
+---
+
+## 🚀 What's Next?
+Now that you know how the model predicts tokens and how parameters restrict or encourage creativity, click below to dive into the core architecture of prompt building.
+
+* [Lesson 1.2: The Anatomy of a Perfect Prompt](./02-anatomy-perfect-prompt.mdx)

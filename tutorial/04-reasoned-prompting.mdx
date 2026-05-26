@@ -1,0 +1,79 @@
+# Lesson 2.2: Reasoned Prompting (Chain of Thought)
+
+Large Language Models do not calculate answers before outputting text. Because they predict the next token on the fly, if you ask a model a complex logic, math, or translation problem and demand a direct answer, it will often output the wrong answer instantly.
+
+To fix this, we use **Reasoned Prompting (Chain-of-Thought)** to force the model to calculate its reasoning step-by-step before arriving at the final answer.
+
+---
+
+## 1. What is Chain-of-Thought (CoT)?
+
+**Chain-of-Thought (CoT)** prompts include explicit steps showing *how* to solve a problem. By writing out the reasoning path in the prompt's examples, the model learns to generate a similar reasoning path when tackling new questions.
+
+### Simple Zero-Shot CoT: "Think Step by Step"
+If you don't have examples, you can trigger basic reasoning by adding a magic suffix to your prompt:
+> **"Let's think step by step."**
+
+This simple phrase forces the model to allocate output tokens for reasoning, which dramatically improves performance on math word problems, logical deductions, and data parsing.
+
+---
+
+## 2. CoT Prompt Construction
+
+Let's test this in the sandbox below. Notice how instructing the model to show its calculations reduces errors:
+
+import PromptPlayground from './components/PromptPlayground.jsx';
+
+<PromptPlayground
+  systemInstruction="You are a helpful logic tutor."
+  variables={["puzzle_input", "reasoning_instruction"]}
+  template="PUZZLE:
+{puzzle_input}
+
+INSTRUCTION:
+{reasoning_instruction}
+"
+/>
+
+Try setting `puzzle_input` to:
+> *"A farmer has 15 sheep. All but 8 die. How many are left?"*
+
+And set `reasoning_instruction` to:
+> Option A: *"Answer with a single number."* (High chance of error)
+>
+> Option B: *"Let's think step by step. Explain your reasoning first, then conclude with the final number."* (Correct logic)
+
+---
+
+## 3. Tree of Thoughts (ToT)
+
+For extremely complex planning or strategic tasks (like optimizing a project timeline or outlining a research paper structure), you can ask the model to evaluate multiple branches of thoughts:
+
+1. **Generate hypotheses:** "Create 3 distinct approaches to solve this problem."
+2. **Evaluate viability:** "For each approach, list its pros, cons, and probability of success."
+3. **Select the optimal path:** "Choose the best path and write the final solution."
+
+This mimics human brain storming and prevents the model from locking into a bad initial assumption.
+
+---
+
+import Quiz from './components/Quiz.jsx';
+
+<Quiz
+  question="Why does Zero-Shot Chain of Thought ('think step by step') work?"
+  options={[
+    "It triggers a database search in the model's server.",
+    "It forces the model to generate intermediate tokens of reasoning, which act as a working scratchpad before it commits to a final prediction.",
+    "It decreases the cost of the model API.",
+    "It overrides the model's temperature settings."
+  ]}
+  answerIndex={1}
+  explanation="Because LLMs generate text token-by-token, they cannot plan ahead. Forcing them to output their reasoning path first allows previous outputs to serve as context for predicting the final correct token."
+/>
+
+---
+
+## 🚀 What's Next?
+Now that you know how to build reasoned structures, let's explore Module 3, where we learn how to structure massive text datasets using delimiters and prevent AI hallucinations.
+
+* [Lesson 3.1: Delimiters, System Prompts, and Guardrails](./05-delimiters-guardrails.mdx)

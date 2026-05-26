@@ -1,0 +1,77 @@
+# Lesson 3.2: Programmatic Outputs (JSON & Markdown)
+
+If your prompt pipeline needs to feed its output to another piece of software (like writing database records, updating CRM fields, or rendering custom charts), raw conversational text is useless. You need **structured, machine-readable data**.
+
+In this lesson, we learn how to force LLMs to output strict, parsable JSON payloads and Markdown tables.
+
+---
+
+## 1. The Challenge of Raw Outputs
+
+By default, an LLM might say:
+> *"Here is the information you requested. The customer name is Alice and her email is..."*
+
+This conversational filler ruins automated parsers. If we try to parse this as JSON, it throws an error. We must instruct the model to return **pure data** and nothing else.
+
+---
+
+## 2. Defining Schemas in the Prompt
+
+To get reliable JSON, you must provide a **Schema definition** (the blueprint of the keys and data types you expect).
+
+### Example Prompt Template
+```text
+Task: Extract customer profile details from the text below.
+Format: Output only a valid JSON object matching the schema below. Do not add any backticks, explanation, or conversational text.
+
+{
+  "name": "string (full name)",
+  "email": "string (valid email address)",
+  "urgency": "string (high, medium, low)",
+  "action_required": "boolean (true if action is requested, false otherwise)"
+}
+
+Input Context:
+"Hi! I'm John Doe. Can someone help me reset my password? I need this fixed today as I have a presentation at 3 PM. You can reach me at john@example.com."
+```
+
+### The Resulting Model Output
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "urgency": "high",
+  "action_required": true
+}
+```
+
+---
+
+## 3. Advanced API Schemas (Structured Outputs)
+
+Modern APIs (like Google Gemini and OpenAI) support **Structured Outputs**. Instead of just pleading with the model to output JSON using text prompts, you can pass a formal JSON schema directly to the API call.
+
+The API forces the model's token selection weights to *only* generate tokens that conform to your schema, guaranteeing **100% valid JSON** every time.
+
+---
+
+import Quiz from './components/Quiz.jsx';
+
+<Quiz
+  question="Why is it beneficial to specify 'Do not wrap output in markdown code block markers' when requesting JSON programmatically?"
+  options={[
+    "It makes the API call run 50% faster.",
+    "It prevents the model from generating unnecessary '```json' wrapper text, allowing the raw string to be fed directly into JSON.parse() without cleaning.",
+    "It reduces the financial cost of the API call by half.",
+    "JSON is only compatible with HTML parsers."
+  ]}
+  answerIndex={1}
+  explanation="When LLMs output JSON, they often add markdown blocks (like ```json ... ```). Programmatic parsers will fail unless you strip those markers first. Instructing the model to omit them saves post-processing clean-up steps."
+/>
+
+---
+
+## 🚀 What's Next?
+Now that you can extract unstructured data into strict programmatic structures, let's explore Module 4, where we chain multiple prompts together to build complex automation engines.
+
+* [Lesson 4.1: Meta-Prompting & Prompt Chaining](./07-meta-chaining.mdx)

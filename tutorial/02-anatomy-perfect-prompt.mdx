@@ -1,0 +1,103 @@
+# Lesson 1.2: The Anatomy of a Perfect Prompt
+
+If you write prompts like you're talking to a search engine or chatting with a friend, you will get inconsistent, unpredictable answers. To write a perfect prompt that succeeds on the first try, you need to structure your request into four distinct pillars.
+
+---
+
+## 🏛️ The 4-Part Prompt Framework
+
+Every robust prompt should isolate the following four elements clearly:
+
+1. **Role / Persona (Who is the model?):** Sets the expert boundaries, tone, and domain limits.
+2. **Context (What is the background?):** Providing the raw materials, documents, constraints, or datasets to analyze.
+3. **Instructions / Task (What must it do?):** Precise actions using imperative verbs (e.g., "Analyze," "Reformat," "Check").
+4. **Constraints & Output Formatting (How must it return it?):** Specific formats like JSON, bulleted Markdown, or restricted lengths.
+
+---
+
+## 🛠️ Interactive Prompt Builder
+
+Use the playground below to see how changing dynamic variables constructs a structured prompt using the 4-part framework.
+
+import PromptPlayground from './components/PromptPlayground.jsx';
+
+<PromptPlayground
+  systemInstruction="You are a professional assistant."
+  variables={["persona", "input_data", "task_description", "output_format"]}
+  template="ROLE: You are an expert {persona}.
+
+CONTEXT DATA:
+---
+{input_data}
+---
+
+TASK:
+{task_description}
+
+CONSTRAINTS / FORMATTING:
+- Restrict output format exactly to {output_format}.
+- Do not add conversational intro or outro text.
+"
+/>
+
+---
+
+## 👥 How the 4-part framework applies across roles
+
+See how the framework translates into specific professional fields:
+
+import PersonaSelector from './components/PersonaSelector.jsx';
+
+<PersonaSelector
+  marketer={
+    <div>
+      <h4>📣 Marketer Prompt Anatomy:</h4>
+      <ul>
+        <li><strong>Role:</strong> Direct-response growth marketer.</li>
+        <li><strong>Context:</strong> Product benefits sheet and target customer demographic profiles.</li>
+        <li><strong>Task:</strong> Craft 3 variants of email subject lines.</li>
+        <li><strong>Constraints:</strong> Must be under 60 characters, with high open rate appeal.</li>
+      </ul>
+    </div>
+  }
+  researcher={
+    <div>
+      <h4>🔬 Researcher Prompt Anatomy:</h4>
+      <ul>
+        <li><strong>Role:</strong> Scientific research database analyst.</li>
+        <li><strong>Context:</strong> Text snippet from a journal article PDF.</li>
+        <li><strong>Task:</strong> Extract methodologies and sample sizes.</li>
+        <li><strong>Constraints:</strong> Output as a Markdown table. Do not make assumptions.</li>
+      </ul>
+    </div>
+  }
+  pm={
+    <div>
+      <h4>📋 Project Manager Prompt Anatomy:</h4>
+      <ul>
+        <li><strong>Role:</strong> Technical Project Manager.</li>
+        <li><strong>Context:</strong> Raw meeting transcripts containing random side talks.</li>
+        <li><strong>Task:</strong> Filter conversations to build a task checklist.</li>
+        <li><strong>Constraints:</strong> Map tasks as key/value pairs in JSON format: <code>{"{"} "task": "...", "assignee": "..." {"}"}</code>.</li>
+      </ul>
+    </div>
+  }
+  analyst={
+    <div>
+      <h4>💼 Business Analyst Prompt Anatomy:</h4>
+      <ul>
+        <li><strong>Role:</strong> IT operations auditor.</li>
+        <li><strong>Context:</strong> Server log reports.</li>
+        <li><strong>Task:</strong> Identify the IP addresses with the highest error rates.</li>
+        <li><strong>Constraints:</strong> Restrict response to a bulleted list of IPs and their incident frequencies.</li>
+      </ul>
+    </div>
+  }
+/>
+
+---
+
+## 🚀 What's Next?
+Now that you can write a structured, perfect prompt, click below to proceed to Week 2, where we will program the model by providing examples rather than just instructions.
+
+* [Lesson 2.1: Few-Shot Prompting & In-Context Learning](./03-few-shot-prompting.mdx)
