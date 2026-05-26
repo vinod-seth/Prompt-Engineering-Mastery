@@ -50,29 +50,36 @@ The final prompt automatically compiles into a clean, structured command ready f
 
 See how the framework translates into specific professional fields:
 
-### 📣 For Marketers
-* **Role:** Direct-response growth marketer.
-* **Context:** Product benefits sheet and target customer demographic profiles.
-* **Task:** Craft 3 variants of email subject lines.
-* **Constraints:** Must be under 60 characters, with high open rate appeal.
-
-### 🔬 For Researchers
-* **Role:** Scientific research database analyst.
-* **Context:** Text snippet from a journal article PDF.
-* **Task:** Extract methodologies and sample sizes.
-* **Constraints:** Output as a Markdown table. Do not make assumptions.
-
-### 📋 For Project Managers
-* **Role:** Technical Project Manager.
-* **Context:** Raw meeting transcripts containing random side talks.
-* **Task:** Filter conversations to build a task checklist.
-* **Constraints:** Map tasks as key/value pairs in JSON format: `{"task": "...", "assignee": "..."}`.
-
-### 💼 For Business Analysts
-* **Role:** IT operations auditor.
-* **Context:** Server log reports.
-* **Task:** Identify the IP addresses with the highest error rates.
-* **Constraints:** Restrict response to a bulleted list of IPs and their incident frequencies.
+<Tabs>
+  <Tab label="📣 Marketer">
+    ### 📣 For Marketers
+    * **Role:** Direct-response growth marketer.
+    * **Context:** Product benefits sheet and target customer demographic profiles.
+    * **Task:** Craft 3 variants of email subject lines.
+    * **Constraints:** Must be under 60 characters, with high open rate appeal.
+  </Tab>
+  <Tab label="🔬 Researcher">
+    ### 🔬 For Researchers
+    * **Role:** Scientific research database analyst.
+    * **Context:** Text snippet from a journal article PDF.
+    * **Task:** Extract methodologies and sample sizes.
+    * **Constraints:** Output as a Markdown table. Do not make assumptions.
+  </Tab>
+  <Tab label="📋 Project Manager">
+    ### 📋 For Project Managers
+    * **Role:** Technical Project Manager.
+    * **Context:** Raw meeting transcripts containing random side talks.
+    * **Task:** Filter conversations to build a task checklist.
+    * **Constraints:** Map tasks as key/value pairs in JSON format: `{"task": "...", "assignee": "..."}`.
+  </Tab>
+  <Tab label="💼 Analyst">
+    ### 💼 For Business Analysts
+    * **Role:** IT operations auditor.
+    * **Context:** Server log reports.
+    * **Task:** Identify the IP addresses with the highest error rates.
+    * **Constraints:** Restrict response to a bulleted list of IPs and their incident frequencies.
+  </Tab>
+</Tabs>
 
 ---
 
