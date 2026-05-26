@@ -15,16 +15,12 @@ Every robust prompt should isolate the following four elements clearly:
 
 ---
 
-## 🛠️ Interactive Prompt Builder
+## 🎛️ Prompt Template Blueprint
 
-Use the playground below to see how changing dynamic variables constructs a structured prompt using the 4-part framework.
+In a programmatic pipeline, your prompt template is stored as a string with placeholders (variables) that you inject at runtime:
 
-import PromptPlayground from './components/PromptPlayground.jsx';
-
-<PromptPlayground
-  systemInstruction="You are a professional assistant."
-  variables={["persona", "input_data", "task_description", "output_format"]}
-  template="ROLE: You are an expert {persona}.
+```text
+ROLE: You are an expert {persona}.
 
 CONTEXT DATA:
 ---
@@ -37,8 +33,16 @@ TASK:
 CONSTRAINTS / FORMATTING:
 - Restrict output format exactly to {output_format}.
 - Do not add conversational intro or outro text.
-"
-/>
+```
+
+### ⚙️ Runtime Variable Injection Example
+If you assign the following Python variables:
+* `persona` = `"Technical Project Manager"`
+* `input_data` = `"Sarah will update the database schema by Friday. John will coordinate with marketing."`
+* `task_description` = `"Extract action items, assignees, and deadlines."`
+* `output_format` = `"A numbered markdown list"`
+
+The final prompt automatically compiles into a clean, structured command ready for the LLM API.
 
 ---
 
@@ -46,54 +50,29 @@ CONSTRAINTS / FORMATTING:
 
 See how the framework translates into specific professional fields:
 
-import PersonaSelector from './components/PersonaSelector.jsx';
+### 📣 For Marketers
+* **Role:** Direct-response growth marketer.
+* **Context:** Product benefits sheet and target customer demographic profiles.
+* **Task:** Craft 3 variants of email subject lines.
+* **Constraints:** Must be under 60 characters, with high open rate appeal.
 
-<PersonaSelector
-  marketer={
-    <div>
-      <h4>📣 Marketer Prompt Anatomy:</h4>
-      <ul>
-        <li><strong>Role:</strong> Direct-response growth marketer.</li>
-        <li><strong>Context:</strong> Product benefits sheet and target customer demographic profiles.</li>
-        <li><strong>Task:</strong> Craft 3 variants of email subject lines.</li>
-        <li><strong>Constraints:</strong> Must be under 60 characters, with high open rate appeal.</li>
-      </ul>
-    </div>
-  }
-  researcher={
-    <div>
-      <h4>🔬 Researcher Prompt Anatomy:</h4>
-      <ul>
-        <li><strong>Role:</strong> Scientific research database analyst.</li>
-        <li><strong>Context:</strong> Text snippet from a journal article PDF.</li>
-        <li><strong>Task:</strong> Extract methodologies and sample sizes.</li>
-        <li><strong>Constraints:</strong> Output as a Markdown table. Do not make assumptions.</li>
-      </ul>
-    </div>
-  }
-  pm={
-    <div>
-      <h4>📋 Project Manager Prompt Anatomy:</h4>
-      <ul>
-        <li><strong>Role:</strong> Technical Project Manager.</li>
-        <li><strong>Context:</strong> Raw meeting transcripts containing random side talks.</li>
-        <li><strong>Task:</strong> Filter conversations to build a task checklist.</li>
-        <li><strong>Constraints:</strong> Map tasks as key/value pairs in JSON format: <code>{"{"} "task": "...", "assignee": "..." {"}"}</code>.</li>
-      </ul>
-    </div>
-  }
-  analyst={
-    <div>
-      <h4>💼 Business Analyst Prompt Anatomy:</h4>
-      <ul>
-        <li><strong>Role:</strong> IT operations auditor.</li>
-        <li><strong>Context:</strong> Server log reports.</li>
-        <li><strong>Task:</strong> Identify the IP addresses with the highest error rates.</li>
-        <li><strong>Constraints:</strong> Restrict response to a bulleted list of IPs and their incident frequencies.</li>
-      </ul>
-    </div>
-  }
-/>
+### 🔬 For Researchers
+* **Role:** Scientific research database analyst.
+* **Context:** Text snippet from a journal article PDF.
+* **Task:** Extract methodologies and sample sizes.
+* **Constraints:** Output as a Markdown table. Do not make assumptions.
+
+### 📋 For Project Managers
+* **Role:** Technical Project Manager.
+* **Context:** Raw meeting transcripts containing random side talks.
+* **Task:** Filter conversations to build a task checklist.
+* **Constraints:** Map tasks as key/value pairs in JSON format: `{"task": "...", "assignee": "..."}`.
+
+### 💼 For Business Analysts
+* **Role:** IT operations auditor.
+* **Context:** Server log reports.
+* **Task:** Identify the IP addresses with the highest error rates.
+* **Constraints:** Restrict response to a bulleted list of IPs and their incident frequencies.
 
 ---
 

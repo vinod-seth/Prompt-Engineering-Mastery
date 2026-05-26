@@ -40,19 +40,22 @@ Never edit a prompt to fix a single bug without re-running your entire test suit
 
 ---
 
-import Quiz from './components/Quiz.jsx';
+### ✍️ Concept Check
 
-<Quiz
-  question="What is prompt regression?"
-  options={[
-    "When a model gets slower at generating tokens over time.",
-    "When updating a prompt to fix a specific output bug accidentally breaks its ability to handle other previously working test cases.",
-    "When you change the model temperature from 0.0 to 1.0.",
-    "When an API key expires during database writes."
-  ]}
-  answerIndex={1}
-  explanation="Prompt regression occurs when local prompt edits cause global style or schema changes, breaking existing parts of your pipeline. Systematic evaluation matrices prevent this by checking changes against all test cases."
-/>
+**Question:** What is prompt regression?
+
+* [ ] **A)** When a model gets slower at generating tokens over time.
+* [x] **B)** When updating a prompt to fix a specific output bug accidentally breaks its ability to handle other previously working test cases.
+* [ ] **C)** When you change the model temperature from 0.0 to 1.0.
+* [ ] **D)** When an API key expires during database writes.
+
+<details>
+<summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
+
+**Correct Answer: B**
+
+**Explanation:** Prompt regression occurs when local prompt edits cause global style or schema changes, breaking existing parts of your pipeline. Systematic evaluation matrices prevent this by checking changes against all test cases.
+</details>
 
 ---
 

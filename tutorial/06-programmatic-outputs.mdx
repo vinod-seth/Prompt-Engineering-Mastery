@@ -55,19 +55,22 @@ The API forces the model's token selection weights to *only* generate tokens tha
 
 ---
 
-import Quiz from './components/Quiz.jsx';
+### ✍️ Concept Check
 
-<Quiz
-  question="Why is it beneficial to specify 'Do not wrap output in markdown code block markers' when requesting JSON programmatically?"
-  options={[
-    "It makes the API call run 50% faster.",
-    "It prevents the model from generating unnecessary '```json' wrapper text, allowing the raw string to be fed directly into JSON.parse() without cleaning.",
-    "It reduces the financial cost of the API call by half.",
-    "JSON is only compatible with HTML parsers."
-  ]}
-  answerIndex={1}
-  explanation="When LLMs output JSON, they often add markdown blocks (like ```json ... ```). Programmatic parsers will fail unless you strip those markers first. Instructing the model to omit them saves post-processing clean-up steps."
-/>
+**Question:** Why is it beneficial to specify 'Do not wrap output in markdown code block markers' when requesting JSON programmatically?
+
+* [ ] **A)** It makes the API call run 50% faster.
+* [x] **B)** It prevents the model from generating unnecessary '```json' wrapper text, allowing the raw string to be fed directly into JSON.parse() without cleaning.
+* [ ] **C)** It reduces the financial cost of the API call by half.
+* [ ] **D)** JSON is only compatible with HTML parsers.
+
+<details>
+<summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
+
+**Correct Answer: B**
+
+**Explanation:** When LLMs output JSON, they often add markdown blocks (like \`\`\`json ... \`\`\`). Programmatic parsers will fail unless you strip those markers first. Instructing the model to omit them saves post-processing clean-up steps.
+</details>
 
 ---
 

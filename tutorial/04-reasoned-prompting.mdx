@@ -20,28 +20,25 @@ This simple phrase forces the model to allocate output tokens for reasoning, whi
 
 ## 2. CoT Prompt Construction
 
-Let's test this in the sandbox below. Notice how instructing the model to show its calculations reduces errors:
+Here is how you write a Zero-Shot CoT template:
 
-import PromptPlayground from './components/PromptPlayground.jsx';
-
-<PromptPlayground
-  systemInstruction="You are a helpful logic tutor."
-  variables={["puzzle_input", "reasoning_instruction"]}
-  template="PUZZLE:
+```text
+PUZZLE:
 {puzzle_input}
 
 INSTRUCTION:
 {reasoning_instruction}
-"
-/>
+```
 
-Try setting `puzzle_input` to:
+### 🧪 Comparison Example
+
+Try testing a logic puzzle like:
 > *"A farmer has 15 sheep. All but 8 die. How many are left?"*
 
-And set `reasoning_instruction` to:
-> Option A: *"Answer with a single number."* (High chance of error)
->
-> Option B: *"Let's think step by step. Explain your reasoning first, then conclude with the final number."* (Correct logic)
+* **Bad Instruction:** *"Answer with a single number."*
+  * **Model response:** often gets confused and performs subtraction $15-8=7$ (incorrect, since "all but 8 die" means 8 are alive).
+* **Good Instruction:** *"Let's think step by step. Explain your reasoning first, then conclude with the final number."*
+  * **Model response:** It reasons that "all but 8 die" means 8 sheep survived. Therefore, the answer is 8.
 
 ---
 
@@ -57,19 +54,22 @@ This mimics human brain storming and prevents the model from locking into a bad 
 
 ---
 
-import Quiz from './components/Quiz.jsx';
+### ✍️ Concept Check
 
-<Quiz
-  question="Why does Zero-Shot Chain of Thought ('think step by step') work?"
-  options={[
-    "It triggers a database search in the model's server.",
-    "It forces the model to generate intermediate tokens of reasoning, which act as a working scratchpad before it commits to a final prediction.",
-    "It decreases the cost of the model API.",
-    "It overrides the model's temperature settings."
-  ]}
-  answerIndex={1}
-  explanation="Because LLMs generate text token-by-token, they cannot plan ahead. Forcing them to output their reasoning path first allows previous outputs to serve as context for predicting the final correct token."
-/>
+**Question:** Why does Zero-Shot Chain of Thought ('think step by step') work?
+
+* [ ] **A)** It triggers a database search in the model's server.
+* [x] **B)** It forces the model to generate intermediate tokens of reasoning, which act as a working scratchpad before it commits to a final prediction.
+* [ ] **C)** It decreases the cost of the model API.
+* [ ] **D)** It overrides the model's temperature settings.
+
+<details>
+<summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
+
+**Correct Answer: B**
+
+**Explanation:** Because LLMs generate text token-by-token, they cannot plan ahead. Forcing them to output their reasoning path first allows previous outputs to serve as context for predicting the final correct token.
+</details>
 
 ---
 

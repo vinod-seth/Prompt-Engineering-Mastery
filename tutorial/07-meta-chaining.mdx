@@ -49,19 +49,22 @@ To build a content pipeline, you write a Python script that orchestrates the cha
 
 ---
 
-import Quiz from './components/Quiz.jsx';
+### ✍️ Concept Check
 
-<Quiz
-  question="Why is it better to chain prompts rather than sending one massive prompt containing all instructions?"
-  options={[
-    "Because chaining is the only way to activate high temperature settings.",
-    "Because breaking a complex task into isolated stages reduces cognitive load on the token predictor, leading to higher accuracy and easier troubleshooting.",
-    "Because chaining prompts decreases the overall latency of the pipeline.",
-    "Because single prompts cannot handle XML delimiters."
-  ]}
-  answerIndex={1}
-  explanation="Chaining isolates tasks so the model doesn't have to divide its attention between cleaning text, formatting tables, and drafting creative copy simultaneously. This drastically improves output quality and makes errors easy to isolate."
-/>
+**Question:** Why is it better to chain prompts rather than sending one massive prompt containing all instructions?
+
+* [ ] **A)** Because chaining is the only way to activate high temperature settings.
+* [x] **B)** Because breaking a complex task into isolated stages reduces cognitive load on the token predictor, leading to higher accuracy and easier troubleshooting.
+* [ ] **C)** Because chaining prompts decreases the overall latency of the pipeline.
+* [ ] **D)** Because single prompts cannot handle XML delimiters.
+
+<details>
+<summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
+
+**Correct Answer: B**
+
+**Explanation:** Chaining isolates tasks so the model doesn't have to divide its attention between cleaning text, formatting tables, and drafting creative copy simultaneously. This drastically improves output quality and makes errors easy to isolate.
+</details>
 
 ---
 
