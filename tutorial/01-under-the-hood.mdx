@@ -1,76 +1,180 @@
 # Lesson 1.1: Under the Hood of an LLM
 
-To command Large Language Models programmatically, you must first understand the fundamental engineering constraints that govern their behavior. An LLM is not an active, reasoning human mind—it is a **probabilistic token prediction engine**.
+Before you can command a Large Language Model, you need to understand what it actually *is* — and more importantly, what it *isn't*. An LLM is not a database. It's not a search engine. It doesn't "know" things the way you do. It's a **probabilistic token prediction engine** — a very sophisticated autocomplete that predicts the most likely next piece of text given everything that came before it.
+
+That distinction matters because it explains *why* prompts work the way they do, and why a small change in wording can completely change the output.
 
 ---
 
-## 1. Tokens vs. Words
+## 1. Tokens: The Atoms of LLM Processing
 
-LLMs do not read text letter-by-letter or word-by-word. Instead, they process text in fragments called **tokens**.
+LLMs don't read text letter-by-letter or word-by-word. They break text into fragments called **tokens** — sub-word units that the model was trained to recognize.
 
-* A token can be a single character, a sub-word, or an entire word.
-* **Rule of thumb:** In English, 1 token is roughly equivalent to **4 characters** or **0.75 words**. 
-* For example, the word `"unbelievable"` is split by tokenizer algorithms into three tokens: `["un", "believ", "able"]`.
+* A token can be a single character (`!`), a sub-word (`ing`), or an entire common word (`the`).
+* **Rough approximation:** In English, 1 token ≈ 4 characters ≈ 0.75 words. But this varies by model and language.
 
-Understanding tokens is critical because:
-1. **Billing:** API providers (like Google Cloud or OpenAI) bill you directly per thousand tokens input and output.
-2. **Context Limits:** Models have strict memory ceilings measured in tokens, not words.
+> **⚠️ Common Mistake:** Don't assume tokenization is the same across models. Each provider uses a different tokenizer:
+> - **OpenAI (GPT-4o)** uses `o200k_base` (tiktoken). The word `"unbelievable"` tokenizes as `["un", "believ", "able"]`.
+> - **Google (Gemini)** uses SentencePiece. The same word may tokenize as `["▁un", "believ", "able"]`.
+> - **Anthropic (Claude)** uses a custom BPE tokenizer. Tokenization varies by model version.
+>
+> Always use the provider's official tokenizer tool to count tokens accurately. OpenAI has [Tokenizer](https://platform.openai.com/tokenizer), and Google offers `count_tokens()` in the Gemini API.
+
+### Why Tokens Matter to You
+
+1. **Billing:** Every API provider bills per token. Understanding tokenization = understanding your costs.
+2. **Context limits:** Models have hard memory ceilings measured in tokens, not words (more on this next).
+3. **Non-English text is more expensive:** Languages with complex scripts (Chinese, Japanese, Korean, Arabic) often require 2-3× more tokens per word than English. If you're building multilingual pipelines, budget accordingly.
 
 ---
 
-## 2. Context Windows: The LLM Memory Bank
+## 2. Context Windows: The Model's Working Memory
 
-The **Context Window** represents the total amount of tokens a model can process in a single transaction (including your prompt, system instructions, and the model's response).
+The **context window** is the total number of tokens a model can hold in a single conversation — including your system prompt, all prior messages, the current user input, *and* the model's own response.
 
-* If a model has a context window of **8,000 tokens**, sending a prompt containing a 10,000-token PDF will cause the model to either reject the request or completely forget the earliest parts of the document.
-* Modern models (like Gemini 1.5 Pro) feature massive context windows (up to 2 million tokens), allowing you to upload entire codebases or hours of audio files.
+Think of it like a desk: the bigger the desk, the more documents you can spread out and reference simultaneously. If your documents exceed the desk size, some fall off the edge — the model either rejects the request or silently loses the earliest parts.
+
+### 🔄 Model Comparison: Context Window Sizes
+
+| Model | Context Window | What That Looks Like |
+|:---|:---|:---|
+| **GPT-4o** (OpenAI) | 128K tokens | ~96,000 words / ~300 pages |
+| **GPT-4.1** (OpenAI) | 1M tokens | ~750,000 words / ~2,500 pages |
+| **Claude Sonnet 4** (Anthropic) | 200K tokens | ~150,000 words / ~500 pages |
+| **Gemini 2.5 Pro** (Google) | 1M tokens | ~750,000 words / ~2,500 pages |
+| **Llama 4 Scout** (Meta) | 10M tokens | ~7.5M words (with 16 experts) |
+| **Mistral Large** (Mistral) | 128K tokens | ~96,000 words / ~300 pages |
+
+> **💡 Pro Tip:** A bigger context window doesn't always mean better performance. Models can struggle with "lost in the middle" problems — where information buried in the center of a long document gets less attention than information at the beginning or end. Claude and Gemini are generally better at long-context fidelity than older GPT models, but always test with your specific use case.
+
+### The "Lost in the Middle" Problem
+
+Research from Stanford (Liu et al., 2023) showed that LLMs perform best when critical information is placed at the **beginning** or **end** of the context window, not the middle. This has practical implications for prompt engineering:
+
+- Put your most important instructions at the top (system prompt) and bottom (final user message)
+- If providing long reference documents, summarize key facts at the end
+- Consider chunking long documents rather than dumping them in wholesale
 
 ---
 
 ## 3. Controlling Randomness: Temperature and Top-P
 
-When an LLM predicts the next token, it generates a list of potential candidates, each with a probability score. We adjust these parameters to modify the randomness of the model's choices:
+When an LLM predicts the next token, it doesn't pick one — it generates a probability distribution over its entire vocabulary (often 100K+ tokens). The parameters **Temperature** and **Top-P** control how the model samples from that distribution.
 
-### Temperature (0.0 to 2.0)
-* **Low Temperature (close to 0.0):** The model always picks the absolute highest-probability tokens. This makes outputs **predictable, logical, and highly structured**. Ideal for JSON generation, coding, and factual translation.
-* **High Temperature (above 1.0):** The model occasionally selects lower-probability tokens. This increases variety, creativity, and "originality." Ideal for brainstorming, creative writing, and marketing copy.
+### Temperature
+
+Temperature scales the probability distribution before sampling. Lower = more focused, higher = more diverse.
+
+| Setting | What It Does | When to Use It |
+|:---|:---|:---|
+| **0.0** | Always picks the single most probable token (greedy decoding). Deterministic output. | JSON extraction, code generation, factual lookups, data parsing |
+| **0.3–0.7** | Mild randomness. Mostly predictable with occasional variety. | Professional emails, summarization, translation |
+| **0.8–1.2** | Noticeable creativity. May produce surprising word choices. | Marketing copy, brainstorming, creative writing |
+| **1.5–2.0** | High randomness. Outputs become increasingly chaotic and incoherent. | Experimental/artistic use only. Rarely useful in production. |
+
+> **⚠️ Common Mistake:** Temperature ranges differ by provider!
+> - **OpenAI**: 0.0 to 2.0
+> - **Google Gemini**: 0.0 to 2.0
+> - **Anthropic Claude**: 0.0 to 1.0 (Claude's 1.0 is roughly equivalent to OpenAI's 1.5–2.0 in randomness)
+>
+> Don't blindly copy temperature settings between models. A temperature of 0.7 on GPT-4o produces very different output than 0.7 on Claude.
 
 ### Top-P (Nucleus Sampling)
-* Controls the pool of tokens the model considers based on their cumulative probability.
-* For example, a Top-P of `0.1` means the model only chooses from the top 10% of most likely tokens. A Top-P of `1.0` lets the model choose from the entire vocabulary.
+
+Instead of scaling probabilities like temperature, Top-P *truncates* the candidate pool. It considers only the smallest set of tokens whose cumulative probability exceeds the threshold `P`.
+
+- **Top-P = 0.1** → Only considers the top ~10% most likely tokens. Very focused.
+- **Top-P = 0.9** → Considers a broad set. More diverse.
+- **Top-P = 1.0** → No truncation. Entire vocabulary is fair game.
+
+> **💡 Pro Tip:** Most practitioners recommend adjusting **either** Temperature **or** Top-P — not both simultaneously. Tweaking both creates unpredictable interactions. When in doubt, set Top-P to 1.0 and adjust temperature only.
 
 ---
 
-## ⚙️ How to Adjust System Parameters
+## ⚙️ Model-Specific API Parameter Syntax
 
-| Task Type | Recommended Temperature | Recommended Top-P | Reason |
-| :--- | :--- | :--- | :--- |
-| **JSON Data Extraction** | `0.0` | `0.1` | Avoid hallucinating fields or breaking schemas. |
-| **Email Copy Draft** | `0.7` | `0.9` | Balance engaging narrative structure with factual accuracy. |
-| **Creative Story Generation**| `1.2` | `1.0` | Maximize lexical diversity and unexpected plot points. |
+Here's how you set these parameters in each major provider's API:
+
+### OpenAI (Python SDK)
+```python
+from openai import OpenAI
+client = OpenAI()
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    temperature=0.0,
+    top_p=0.1,
+    messages=[
+        {"role": "system", "content": "You are a data extraction assistant."},
+        {"role": "user", "content": "Extract the customer name and email from: ..."}
+    ]
+)
+```
+
+### Anthropic Claude (Python SDK)
+```python
+import anthropic
+client = anthropic.Anthropic()
+
+response = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    max_tokens=1024,
+    temperature=0.0,  # Range: 0.0 to 1.0
+    system="You are a data extraction assistant.",
+    messages=[
+        {"role": "user", "content": "Extract the customer name and email from: ..."}
+    ]
+)
+```
+
+### Google Gemini (Python SDK)
+```python
+from google import genai
+
+client = genai.Client()
+response = client.models.generate_content(
+    model="gemini-2.5-pro",
+    contents="Extract the customer name and email from: ...",
+    config={
+        "system_instruction": "You are a data extraction assistant.",
+        "temperature": 0.0,
+        "top_p": 0.1,
+    }
+)
+```
 
 ---
 
-### ✍️ Concept Check
+## ✍️ Concept Check
 
-**Question:** You are writing a Python pipeline to extract customer details from raw emails and format them as strict JSON objects. Which settings should you choose?
+**Scenario:** You're building a customer support bot that classifies incoming tickets into categories (Billing, Technical, General) and extracts the customer's account ID. Which configuration is correct?
 
-* [ ] **A)** Temperature = 1.5, Top-P = 1.0
-* [x] **B)** Temperature = 0.0, Top-P = 0.1
-* [ ] **C)** Temperature = 0.8, Top-P = 0.9
-* [ ] **D)** Temperature = 2.0, Top-P = 0.5
+* [ ] **A)** Temperature = 0.0, Top-P = 0.1 — and these exact numbers work identically on GPT-4o, Claude, and Gemini.
+* [ ] **B)** Temperature = 1.5, Top-P = 1.0 — high creativity helps the model find unusual ticket categories.
+* [x] **C)** Temperature = 0.0, Top-P = 0.1 — but you need to adjust the temperature value if switching between OpenAI/Gemini (range 0–2) and Claude (range 0–1).
+* [ ] **D)** Temperature doesn't matter for classification tasks.
 
 <details>
 <summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
 
-**Correct Answer: B**
+**Correct Answer: C**
 
-**Explanation:** When outputting strict formats like JSON, you need high predictability. Setting a low temperature (0.0) and top-p (0.1) forces the model to choose only the most probable structural tokens, minimizing schema breakage.
+**Explanation:** For classification and extraction tasks, you want minimal randomness (low temperature, low Top-P). However, the key insight is that parameter ranges differ between providers. Setting `temperature=0.0` is safe everywhere, but if you were using a moderate temperature like `0.7`, you'd need to recalibrate between Claude (0.0–1.0 scale) and GPT/Gemini (0.0–2.0 scale). Answer A is wrong because it ignores this cross-model difference. Answer B would produce chaotic, unreliable classifications.
 </details>
 
 ---
 
-## 🚀 What's Next?
-Now that you know how the model predicts tokens and how parameters restrict or encourage creativity, click below to dive into the core architecture of prompt building.
+## 📚 References & Further Reading
 
-* [Lesson 1.2: The Anatomy of a Perfect Prompt](./02-anatomy-perfect-prompt.mdx)
+- **Tokenization**: OpenAI's [Tokenizer Tool](https://platform.openai.com/tokenizer) — try pasting the same text and comparing token counts
+- **Lost in the Middle**: Liu et al. (2023), *"Lost in the Middle: How Language Models Use Long Contexts"* — [arXiv:2307.03172](https://arxiv.org/abs/2307.03172)
+- **Temperature & Sampling**: Holtzman et al. (2020), *"The Curious Case of Neural Text Degeneration"* — the paper that introduced nucleus sampling (Top-P)
+- **Model Documentation**: [OpenAI API Docs](https://platform.openai.com/docs), [Anthropic Docs](https://docs.anthropic.com), [Gemini API Docs](https://ai.google.dev/docs)
+
+---
+
+## 🚀 What's Next?
+
+You now understand the engine under the hood — tokens, context windows, and the sampling knobs that control creativity vs. precision. In the next lesson, we'll build the chassis: a reusable 4-part prompt framework that works across any model.
+
+* [Lesson 1.2: The Anatomy of a Perfect Prompt →](./02-anatomy-perfect-prompt.mdx)

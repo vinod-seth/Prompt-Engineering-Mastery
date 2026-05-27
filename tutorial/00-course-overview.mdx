@@ -1,11 +1,45 @@
 # Course Overview: Prompt Engineering Mastery
 
-Welcome to **Course 1: Prompt Engineering Mastery**. This course is designed to take you from a casual user of AI to an advanced practitioner who programmatically controls Large Language Models (LLMs).
+Welcome to **Course 1: Prompt Engineering Mastery**. If you've been using ChatGPT, Claude, or Gemini like a fancy search engine — typing a question and hoping for a good answer — this course is going to change everything about how you work with AI.
+
+I designed this course after spending months watching teams waste hours on "prompt guessing" — trying random phrasings until the model accidentally gives them what they want. That's not engineering. That's gambling. By the end of this course, you'll treat prompts like code: structured, testable, version-controlled, and reproducible.
 
 ---
 
 ## 🎯 Course Objective
-Move past "simple chatting" into systematic, predictable, and programmatic control of LLMs. You will learn the mechanics, advanced architectures, guardrails, output controls, and orchestration frameworks needed to make AI work for you reliably at scale.
+
+Move past "simple chatting" into **systematic, predictable, and programmatic control** of Large Language Models (LLMs). You will learn the mechanics, advanced architectures, guardrails, output controls, and orchestration frameworks needed to make AI work for you reliably at scale — regardless of which model you're using.
+
+---
+
+## 🧰 Prerequisites
+
+Before starting this course, you should have:
+
+- **Basic AI familiarity**: You've used at least one chatbot (ChatGPT, Claude, Gemini, etc.) for at least a few weeks
+- **A working account** on at least one LLM platform (free tiers are fine):
+  - [ChatGPT](https://chat.openai.com) (OpenAI)
+  - [Claude](https://claude.ai) (Anthropic)
+  - [Gemini](https://gemini.google.com) (Google)
+- **Optional but recommended**: Basic Python knowledge for the API code examples. Don't worry — we explain every line.
+
+> **💡 Pro Tip:** Create accounts on all three platforms. One of the most valuable skills in prompt engineering is understanding how the *same prompt behaves differently* across models. You'll be doing a lot of cross-model comparisons in this course.
+
+---
+
+## 🤖 Models Covered in This Course
+
+This course is **model-agnostic by design**, but we provide specific examples and behavioral notes for:
+
+| Provider | Models | Strengths You'll Explore |
+|:---|:---|:---|
+| **OpenAI** | GPT-4o, GPT-4.1, o3/o4-mini (reasoning) | Best-in-class instruction following, function calling, JSON mode |
+| **Anthropic** | Claude Sonnet 4, Claude Opus 4 | Extended thinking, XML-native prompting, long-context fidelity |
+| **Google** | Gemini 2.5 Pro, Gemini 2.5 Flash | Massive context windows (1M+ tokens), multimodal, structured output |
+| **Meta** | Llama 4 (Scout, Maverick) | Open-source, self-hostable, cost-effective for batch workloads |
+| **Mistral** | Mistral Large, Codestral | Strong multilingual support, EU data residency options |
+
+> **⚠️ A note on model versions:** AI moves fast. By the time you read this, newer model versions may exist. The *principles* we teach are timeless — the specific model names are reference points. Always check the provider's docs for the latest.
 
 ---
 
@@ -15,39 +49,57 @@ Find your professional role below to see how this course will directly transform
 
 <Tabs>
   <Tab label="📣 Marketer">
-    * **Your Goal:** Stop rewriting the same ad text and email sequences for different campaigns manually.
-    * **What you will learn:** How to feed customer demographic tables directly into prompt pipelines to generate hundreds of highly-targeted, campaign-specific email drafts and social hooks in seconds.
+    * **Your Pain Point:** Rewriting the same ad text and email sequences for different campaigns manually. Every. Single. Time.
+    * **What you will build:** Prompt pipelines that ingest customer demographic tables and generate hundreds of targeted, campaign-specific email drafts and social hooks in seconds — with consistent brand voice across ChatGPT, Claude, and Gemini.
+    * **Real outcome:** One marketing team I worked with cut their campaign copy production from 3 days to 45 minutes using techniques from Modules 2 and 4.
   </Tab>
   <Tab label="🔬 Researcher">
-    * **Your Goal:** Stop reading thousands of pages of text or user reviews to extract data points manually.
-    * **What you will learn:** How to build programmatic parsers that isolate study results, classify sentiments, and automatically output structured markdown tables or CSV databases from unstructured text.
+    * **Your Pain Point:** Reading thousands of pages of papers or user reviews to extract data points manually.
+    * **What you will build:** Programmatic parsers that isolate study results, classify sentiments, and automatically output structured markdown tables or CSV databases from unstructured text — with built-in hallucination guardrails.
+    * **Real outcome:** A research assistant used the JSON extraction techniques from Lesson 3.2 to process 200 journal abstracts in under 10 minutes.
   </Tab>
   <Tab label="📋 Project Manager">
-    * **Your Goal:** Turn meeting transcripts and task threads into actionable project tickets without spending hours summarizing.
-    * **What you will learn:** How to write prompt pipelines that ingest transcript files, identify deadlines/action items, construct strict JSON payloads, and format them directly for task managers.
+    * **Your Pain Point:** Turning meeting transcripts and Slack threads into actionable project tickets without spending hours summarizing.
+    * **What you will build:** Prompt pipelines that ingest transcript files, identify deadlines and action items, construct strict JSON payloads, and format them directly for Jira, Asana, or Linear.
+    * **Real outcome:** The capstone project at the end of this course is literally this — you'll build it yourself.
   </Tab>
   <Tab label="💼 Analyst">
-    * **Your Goal:** Automate repetitive triage, daily reports, and data transformation tasks.
-    * **What you will learn:** How to write rule-based routing engines that evaluate incoming requests, direct them to specialized sub-prompts, and handle edge cases gracefully.
+    * **Your Pain Point:** Automating repetitive triage, daily reports, and data transformation tasks.
+    * **What you will build:** Rule-based routing engines that evaluate incoming requests, direct them to specialized sub-prompts, handle edge cases gracefully, and output clean structured data.
+    * **Real outcome:** You'll learn why a chain of 3 simple prompts outperforms 1 complex prompt every time (Module 4).
   </Tab>
 </Tabs>
 
 ---
 
 ## 🗺️ Syllabus Outline
-The course is structured over **4 Weeks** (2 lessons per week):
 
-* **Module 1: The Core Mechanics (Week 1)**
-  * [Lesson 1.1: Under the Hood of an LLM](./01-under-the-hood.mdx) - Tokens, Context Windows, Temperature, Top-P.
-  * [Lesson 1.2: The Anatomy of a Perfect Prompt](./02-anatomy-perfect-prompt.mdx) - System instructions, Context, Tasks, Constraints.
-* **Module 2: Advanced Prompt Architectures (Week 2)**
-  * [Lesson 2.1: Few-Shot Prompting & In-Context Learning](./03-few-shot-prompting.mdx) - Programming by example.
-  * [Lesson 2.2: Reasoned Prompting (Chain of Thought)](./04-reasoned-prompting.mdx) - Reducing logical errors using step-by-step reasoning.
-* **Module 3: Dealing with Complexity & Output Control (Week 3)**
-  * [Lesson 3.1: Delimiters, System Prompts, and Guardrails](./05-delimiters-guardrails.mdx) - Isolating context and protecting from jailbreaks.
-  * [Lesson 3.2: Programmatic Outputs (JSON & Markdown)](./06-programmatic-outputs.mdx) - Exporting parsable databases and JSON objects.
-* **Module 4: Real-World Scaling & Optimization (Week 4)**
-  * [Lesson 4.1: Meta-Prompting & Prompt Chaining](./07-meta-chaining.mdx) - Linear pipelines and AI prompt generators.
-  * [Lesson 4.2: Evaluation & Iteration](./08-evaluation-iteration.mdx) - Prompt matrices and edge-case validation.
-* **🎓 Capstone Project**
-  * [The Automated Enterprise Content Engine](./09-capstone-project.mdx) - Build a multi-stage prompt pipeline that transforms an audio transcript into blog posts, social hooks, and personalized newsletters.
+The course is structured over **4 Weeks** (2 lessons per week), plus a hands-on capstone:
+
+### Module 1: The Core Mechanics (Week 1)
+* [Lesson 1.1: Under the Hood of an LLM](./01-under-the-hood.mdx) — Tokens, context windows, temperature, Top-P — and how they differ across GPT, Claude, and Gemini.
+* [Lesson 1.2: The Anatomy of a Perfect Prompt](./02-anatomy-perfect-prompt.mdx) — The 4-pillar framework: Role, Context, Task, Constraints. Real API syntax for all major providers.
+
+### Module 2: Advanced Prompt Architectures (Week 2)
+* [Lesson 2.1: Few-Shot Prompting & In-Context Learning](./03-few-shot-prompting.mdx) — Programming by example. How each model prefers its examples formatted.
+* [Lesson 2.2: Reasoned Prompting (Chain of Thought)](./04-reasoned-prompting.mdx) — Step-by-step reasoning, Tree of Thoughts, and dedicated reasoning models (o3, Claude's extended thinking, Gemini's thinking mode).
+
+### Module 3: Security, Structure & Output Control (Week 3)
+* [Lesson 3.1: Delimiters, System Prompts, and Guardrails](./05-delimiters-guardrails.mdx) — Prompt injection defense, system prompt engineering, and advanced security techniques.
+* [Lesson 3.2: Programmatic Outputs (JSON, Schemas & Function Calling)](./06-programmatic-outputs.mdx) — Structured output APIs, function calling, and guaranteed-valid JSON across providers.
+
+### Module 4: Real-World Scaling & Optimization (Week 4)
+* [Lesson 4.1: Meta-Prompting & Prompt Chaining](./07-meta-chaining.mdx) — Linear pipelines, model routing, orchestration frameworks, and AI-generated prompts.
+* [Lesson 4.2: Evaluation & Iteration](./08-evaluation-iteration.mdx) — Prompt matrices, LLM-as-Judge, regression testing, and A/B testing your prompts.
+
+### 🎓 Capstone Project
+* [The Automated Enterprise Content Engine](./09-capstone-project.mdx) — Build a multi-stage prompt pipeline that transforms an audio transcript into blog posts, social hooks, and personalized newsletters — tested across multiple models.
+
+---
+
+## 🏁 How to Get the Most Out of This Course
+
+1. **Don't just read — do.** Every lesson has exercises. Actually run the prompts on real models.
+2. **Test on multiple models.** The same prompt will behave differently on GPT-4o vs Claude vs Gemini. That difference *is* the lesson.
+3. **Keep a prompt journal.** Document what works, what fails, and why. Your future self will thank you.
+4. **Break things on purpose.** Try adversarial inputs. Feed empty data. Switch languages mid-prompt. Understanding failure modes is what separates a prompt engineer from a prompt guesser.

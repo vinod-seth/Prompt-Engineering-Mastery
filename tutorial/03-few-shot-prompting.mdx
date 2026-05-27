@@ -1,83 +1,219 @@
 # Lesson 2.1: Few-Shot Prompting & In-Context Learning
 
-Sometimes, writing instructions is not enough. Explaining tone, formatting nuances, or complex classification logic in words can lead to long, confusing prompts that LLMs fail to follow. 
+There's a moment every prompt engineer hits: you've written the most detailed, carefully worded instructions imaginable, and the model *still* doesn't format its output the way you want. You say "use a professional but approachable tone" and it gives you either a corporate press release or a casual blog post — never the sweet spot you had in mind.
 
-The solution is **In-Context Learning (Few-Shot Prompting)**: showing the model exactly what you want using structural examples.
+The solution? Stop explaining. Start *showing*.
 
----
-
-## 1. Zero-Shot vs. Few-Shot Prompting
-
-* **Zero-Shot Prompting:** You give the model an instruction and an input, and expect it to execute without seeing any examples.
-  * *Example:* "Translate this word into pirate slang: 'Hello'."
-* **Few-Shot Prompting:** You provide one or more examples of inputs and their corresponding desired outputs before giving the final input.
-  * *Example:*
-    ```
-    Input: Hello -> Output: Ahoy matey!
-    Input: Yes -> Output: Aye!
-    Input: Goodbye -> Output:
-    ```
+**In-Context Learning (ICL)** — commonly called **Few-Shot Prompting** — is one of the most powerful techniques in your toolkit. Instead of describing what you want in words, you provide concrete examples of input-output pairs. The model pattern-matches against your examples and applies the same transformation to new inputs.
 
 ---
 
-## 2. When to Use Few-Shot Prompting
+## 1. The Spectrum: Zero-Shot → One-Shot → Few-Shot
 
-Few-shot prompting is highly effective when:
-* **Complex formatting is required:** For example, turning messy text into custom code blocks or specific layout structures.
-* **The output tone is subjective:** Rather than telling the model to be "humorous yet professional," provide 3 examples of what that sounds like.
-* **Dealing with edge cases:** Showing how to handle missing data or weird inputs.
+| Approach | Examples Provided | Best For |
+|:---|:---|:---|
+| **Zero-Shot** | 0 | Simple, well-defined tasks the model already "knows" (translation, summarization) |
+| **One-Shot** | 1 | Quick calibration of tone or format |
+| **Few-Shot** | 2–10 | Complex formatting, custom classification, subjective tone matching, edge case handling |
+
+### Zero-Shot Example
+```text
+Classify the following email as [Billing], [Technical], or [General]:
+
+"I can't log into my dashboard. It says my password is wrong but I just reset it."
+
+Category:
+```
+
+### Few-Shot Example (Same Task, Better Results)
+```text
+Classify customer emails into exactly one category: [Billing], [Technical], or [General].
+
+Email: "I was charged twice for my subscription this month."
+Category: [Billing]
+
+Email: "Your product is amazing! Keep up the great work."
+Category: [General]
+
+Email: "The export button on the reports page throws a 500 error."
+Category: [Technical]
+
+Email: "My payment didn't go through but the money left my account."
+Category: [Billing]
+
+Email: "I can't log into my dashboard. It says my password is wrong but I just reset it."
+Category:
+```
+
+Notice how the few-shot version implicitly teaches the model:
+- The exact output format (`[Category]` in brackets)
+- That "General" catches non-actionable emails
+- That billing + technical overlap cases (like the payment one) should go to Billing
+- That it should output **nothing else** — no explanation, no hedging
+
+---
+
+## 2. When to Reach for Few-Shot Prompting
+
+In my experience, few-shot prompting beats zero-shot in three situations:
+
+1. **Custom formatting requirements.** Your company uses a specific ticket format, a particular markdown structure, or a non-standard labeling scheme that the model has never seen in its training data.
+
+2. **Subjective tone calibration.** "Professional but friendly" means different things to different people. Three examples of your ideal tone accomplish more than a paragraph of description.
+
+3. **Ambiguous edge cases.** Show the model how to handle missing data, contradictory inputs, or "none of the above" scenarios — because it won't guess your business rules correctly.
+
+> **⚠️ Common Mistake:** Adding more examples isn't always better. Past 5-7 examples, you often hit diminishing returns — and you're burning tokens (= money). 3-5 well-chosen, diverse examples usually outperform 15 repetitive ones.
 
 ---
 
 ## 3. Designing High-Quality Examples
 
-When writing examples for a few-shot prompt, follow these guidelines:
-1. **Consistency:** Keep the formatting of input/output tokens identical between examples.
-2. **Diversity:** Show different types of inputs so the model doesn't overfit to a single pattern.
-3. **Randomness:** Do not order all positive reviews first and negative reviews second; mix them to avoid bias.
+Not all examples are created equal. Here's what separates good few-shot examples from ones that actually hurt performance:
 
-### Example: Custom Sentiment Categorizer
+### ✅ Do:
+- **Show diversity.** Cover different categories, edge cases, and input lengths.
+- **Randomize order.** Don't group all positive examples together — mix them to prevent positional bias.
+- **Include boundary cases.** Show at least one ambiguous input and the correct classification.
+- **Keep formatting identical.** Every example must use the exact same input/output structure.
+
+### ❌ Don't:
+- **Use only easy examples.** If all examples are obvious, the model never learns your edge case rules.
+- **Contradict yourself.** If two examples handle similar inputs differently, the model will be confused.
+- **Over-explain in examples.** The output should be clean — save explanations for the instruction block.
+
+---
+
+## 🔄 Model-Specific Few-Shot Behavior
+
+Here's something most tutorials won't tell you: each model family has preferences for *how* examples are formatted. Using the right format can meaningfully improve accuracy.
+
+### Claude (Anthropic) — Prefers XML-Wrapped Examples
+
+Claude was trained extensively on XML-structured data. Wrapping your examples in XML tags gives Claude strong structural signals:
+
 ```text
-Task: Classify customer emails into one of three categories: [Refund], [Support], [Praise].
+You are a customer email classifier. Classify emails into exactly one category.
 
-Example 1:
-Input: "Hi, I bought the shoes yesterday but they are too tight. Can I send them back?"
-Output: [Refund]
+<examples>
+  <example>
+    <input>I was charged twice for my subscription this month.</input>
+    <output>[Billing]</output>
+  </example>
+  <example>
+    <input>The export button on the reports page throws a 500 error.</input>
+    <output>[Technical]</output>
+  </example>
+  <example>
+    <input>Your product is amazing! Keep up the great work.</input>
+    <output>[General]</output>
+  </example>
+</examples>
 
-Example 2:
-Input: "You guys are amazing! The customer care team helped me out in minutes."
-Output: [Praise]
+Now classify this email:
+<input>I can't log into my dashboard. It says my password is wrong but I just reset it.</input>
+```
 
-Example 3:
-Input: "Where is the settings button on the dashboard? I cannot find it."
-Output: [Support]
+### GPT-4o (OpenAI) — Prefers Multi-Turn Message Examples
 
-Input: "My order has not arrived yet. It has been three weeks. What is going on?"
-Output:
+OpenAI's API supports passing few-shot examples as alternating `user` and `assistant` messages, which gives the model the strongest signal:
+
+```python
+from openai import OpenAI
+client = OpenAI()
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    temperature=0.0,
+    messages=[
+        {"role": "system", "content": "Classify customer emails into exactly one category: [Billing], [Technical], or [General]. Output only the category label."},
+        # Example 1
+        {"role": "user", "content": "I was charged twice for my subscription this month."},
+        {"role": "assistant", "content": "[Billing]"},
+        # Example 2
+        {"role": "user", "content": "The export button throws a 500 error."},
+        {"role": "assistant", "content": "[Technical]"},
+        # Example 3
+        {"role": "user", "content": "Your product is amazing!"},
+        {"role": "assistant", "content": "[General]"},
+        # Actual input
+        {"role": "user", "content": "I can't log into my dashboard. It says my password is wrong but I just reset it."}
+    ]
+)
+```
+
+> **💡 Pro Tip:** This multi-turn approach works exceptionally well with GPT models because the model treats the `assistant` messages as its own prior outputs — essentially "remembering" that it already committed to this format.
+
+### Gemini (Google) — Flexible, Markdown-Friendly
+
+Gemini handles both XML and markdown-style examples well. It also natively supports a `contents` array with alternating `user`/`model` roles for few-shot examples:
+
+```python
+from google import genai
+from google.genai.types import Content, Part
+
+client = genai.Client()
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    config={
+        "system_instruction": "Classify customer emails into exactly one category: [Billing], [Technical], or [General]. Output only the category label.",
+        "temperature": 0.0,
+    },
+    contents=[
+        Content(role="user", parts=[Part(text="I was charged twice this month.")]),
+        Content(role="model", parts=[Part(text="[Billing]")]),
+        Content(role="user", parts=[Part(text="The export button throws a 500 error.")]),
+        Content(role="model", parts=[Part(text="[Technical]")]),
+        Content(role="user", parts=[Part(text="I can't log into my dashboard.")]),
+    ]
+)
 ```
 
 ---
 
-### ✍️ Concept Check
+## 4. How Many Shots Do You Need?
 
-**Question:** Why would a project manager choose few-shot prompting over zero-shot prompting when formatting weekly meeting logs?
+This depends on task complexity. Here's a practical guideline:
 
-* [ ] **A)** Because few-shot prompts consume fewer API tokens.
-* [x] **B)** Because the LLM needs to see exact output examples to match the custom bulleted hierarchy and shorthand labels used by the company.
-* [ ] **C)** Because few-shot prompts automatically run faster on the API servers.
-* [ ] **D)** Because zero-shot prompting is only compatible with creative tasks.
+| Task Type | Recommended Shots | Why |
+|:---|:---|:---|
+| Binary classification (yes/no, pos/neg) | 2–3 | Models already understand binary choices well |
+| Multi-class classification (5+ categories) | 4–6 | Need at least one example per category |
+| Custom formatting (specific markdown/JSON) | 2–3 | Pattern is more important than volume |
+| Subjective tone matching | 3–5 | Need enough variety to triangulate the "vibe" |
+| Complex extraction with edge cases | 5–8 | Must cover happy paths AND failure modes |
+
+---
+
+## ✍️ Concept Check
+
+**Scenario:** You've built a few-shot classifier for support tickets with 3 examples — all categorized as `[Technical]`. When you send a billing-related ticket, the model still outputs `[Technical]`. What's the most likely cause?
+
+* [ ] **A)** The model's context window is too small for few-shot prompting.
+* [ ] **B)** You need to increase the temperature to encourage variety.
+* [ ] **C)** Few-shot prompting doesn't work for classification tasks.
+* [x] **D)** All examples are the same category, causing the model to overfit to `[Technical]`. You need diverse examples covering all categories.
 
 <details>
 <summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
 
-**Correct Answer: B**
+**Correct Answer: D**
 
-**Explanation:** In-context examples show the model the exact stylistic layout, hierarchy, and shorthand terminology needed. Instructions alone often result in the model using standard browser defaults instead of the company's specific style guide.
+**Explanation:** This is the most common few-shot mistake: using examples that lack diversity. If the model sees 3 `[Technical]` examples and no other categories, it learns a strong prior that "the answer is always [Technical]." The fix is simple — include at least one example from each category, and mix the ordering randomly. This applies equally to GPT, Claude, and Gemini.
 </details>
 
 ---
 
-## 🚀 What's Next?
-Now that you can program models using examples, click below to see how to force models to think logically through multi-step reasoning.
+## 📚 References & Further Reading
 
-* [Lesson 2.2: Reasoned Prompting (Chain of Thought)](./04-reasoned-prompting.mdx)
+- **Brown et al. (2020)**: *"Language Models are Few-Shot Learners"* — the GPT-3 paper that popularized in-context learning — [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
+- **Min et al. (2022)**: *"Rethinking the Role of Demonstrations"* — surprising finding that label correctness matters less than format consistency in few-shot examples
+- **Anthropic's Prompt Engineering Cookbook**: [docs.anthropic.com/en/docs/build-with-claude/prompt-engineering](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering) — excellent section on XML-structured examples
+
+---
+
+## 🚀 What's Next?
+
+Few-shot prompting programs the model through pattern matching. But what about tasks that require *reasoning* — multi-step logic, math, or planning? For those, you need to teach the model to *think out loud* before answering. That's Chain-of-Thought prompting.
+
+* [Lesson 2.2: Reasoned Prompting (Chain of Thought) →](./04-reasoned-prompting.mdx)

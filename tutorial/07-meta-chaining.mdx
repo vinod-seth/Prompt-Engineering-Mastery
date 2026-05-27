@@ -1,74 +1,248 @@
 # Lesson 4.1: Meta-Prompting & Prompt Chaining
 
-When building real-world software integrations, tasks are often too complex for a single prompt. If you ask an LLM to take an raw meeting transcript and instantly write a blog post, extract project tasks, and draft an email newsletter all in one prompt, the model will output low-quality, generic results.
+Here's a pattern I see constantly: someone asks a model to take a 30-minute meeting transcript and simultaneously clean it up, extract action items, write a summary blog post, generate social media hooks, AND draft a follow-up email. The result? A mediocre blob that does everything poorly and nothing well.
 
-The solution is **Prompt Chaining**: breaking down a massive task into a linear sequence of smaller, specialized prompts.
+The model isn't failing because it's stupid — it's failing because you're asking it to juggle five cognitive tasks in a single context window. Imagine asking a human to simultaneously translate a document, fact-check it, redesign its layout, write a cover letter about it, AND compose a tweet — all at the same time, on one sheet of paper.
+
+**Prompt Chaining** solves this by breaking complex workflows into a pipeline of specialized, sequential prompts — where each step does one thing excellently, and its output feeds the next step.
+
+**Meta-Prompting** takes it further: using AI to write, optimize, and improve your prompts themselves.
 
 ---
 
-## 1. What is Prompt Chaining?
+## 1. Prompt Chaining: Linear Pipelines
 
-Prompt Chaining is the practice of passing the output of one prompt as the input to the next prompt. 
+Prompt Chaining is the practice of connecting multiple prompts in sequence, where the output of Prompt N becomes the input to Prompt N+1.
 
 ```mermaid
 graph LR
-    A[Raw Transcript] -->|Prompt 1: Clean text| B[Clean Transcript]
-    B -->|Prompt 2: Identify topics| C[Topic List]
-    C -->|Prompt 3: Write copy| D[Blog Post]
+    A[Raw Transcript] -->|Prompt 1: Clean & Format| B[Clean Text]
+    B -->|Prompt 2: Extract Key Topics| C[Topic List + Quotes]
+    C -->|Prompt 3: Generate Blog Post| D[Finished Blog Post]
 ```
 
-### Why Chaining Wins:
-1. **Focus:** Each model run focuses on a single, clear operation.
-2. **Token Economy:** You don't waste tokens asking the model to perform multiple heavy cognitive tasks in a single cycle.
-3. **Debugging:** If the final output is bad, you can pinpoint exactly which step in the chain failed.
+### Why Chaining Beats Single-Prompt
+
+| Factor | Single Mega-Prompt | Chained Pipeline |
+|:---|:---|:---|
+| **Quality** | Each sub-task gets diluted attention | Each step gets full model focus |
+| **Debuggability** | If output is wrong, where's the bug? | Inspect each step's input/output |
+| **Token efficiency** | Repeating instructions inflates prompt size | Each prompt is lean and specific |
+| **Flexibility** | Change one thing, rewrite the whole prompt | Swap or upgrade individual steps |
+| **Model routing** | Stuck with one model for everything | Use cheap models for simple steps, premium for complex ones |
+
+### Complete Python Pipeline Example
+
+Here's a real, working 3-stage pipeline using the OpenAI API:
+
+```python
+from openai import OpenAI
+import json
+
+client = OpenAI()
+
+def run_prompt(system: str, user_input: str, model: str = "gpt-4o-mini", temp: float = 0.0) -> str:
+    """Helper to run a single prompt step."""
+    response = client.chat.completions.create(
+        model=model,
+        temperature=temp,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user_input}
+        ]
+    )
+    return response.choices[0].message.content
+
+# ─── STAGE 1: Clean & Extract (Cheap model — simple task) ───
+raw_transcript = open("meeting_transcript.txt").read()
+
+clean_text = run_prompt(
+    system="""You are a transcript editor. Clean the raw meeting transcript:
+    - Remove filler words (um, uh, like, you know)
+    - Fix grammar and punctuation
+    - Remove off-topic tangents (small talk, jokes)
+    - Preserve all substantive content verbatim
+    Output only the cleaned transcript. No preamble.""",
+    user_input=f"<transcript>{raw_transcript}</transcript>",
+    model="gpt-4o-mini"  # Cheap model — this is a simple cleanup task
+)
+
+# ─── STAGE 2: Extract Topics & Action Items (Structured output) ───
+extracted = run_prompt(
+    system="""You are a meeting analyst. From the cleaned transcript, extract:
+    1. Key topics discussed (with brief descriptions)
+    2. Action items (task, assignee, deadline)
+    3. Decisions made
+    Output as JSON matching this schema:
+    {"topics": [{"title": "str", "summary": "str"}],
+     "action_items": [{"task": "str", "assignee": "str", "deadline": "str"}],
+     "decisions": ["str"]}""",
+    user_input=f"<transcript>{clean_text}</transcript>",
+    model="gpt-4o"  # Better model — extraction requires understanding
+)
+
+# ─── STAGE 3: Generate Blog Post (Creative, needs quality) ───
+blog_post = run_prompt(
+    system="""You are a content strategist writing for a tech company blog.
+    Write a 600-word blog post based on the meeting insights provided.
+    - Use an engaging, professional tone
+    - Include H2 headers for each major topic
+    - Add a concluding call-to-action
+    - Do NOT mention that this came from a meeting transcript""",
+    user_input=f"<meeting_insights>{extracted}</meeting_insights>",
+    model="gpt-4o",  # Premium model — creative writing quality matters
+    temp=0.7  # Higher temperature for more engaging prose
+)
+
+print(blog_post)
+```
+
+> **💡 Pro Tip (Model Routing):** Notice how Stage 1 uses `gpt-4o-mini` ($0.15/1M input tokens) while Stages 2-3 use `gpt-4o` ($2.50/1M input tokens). This is **model routing** — using cheap models for simple tasks and premium models where quality matters. A typical pipeline can cut costs by 60-80% this way. You can also mix providers: use Gemini Flash for cleanup, Claude for analysis, and GPT-4o for creative writing.
 
 ---
 
-## 2. Meta-Prompting: AI Writing Prompts
+## 2. Branching Pipelines
 
-**Meta-Prompting** is using an LLM to generate or optimize prompts for you. 
+Not all pipelines are linear. Sometimes Stage 1 feeds into multiple parallel Stage 2 prompts:
 
-Instead of guessing what instructions will get the best results, you can prompt a model (like Gemini) acting as a "Prompt Engineer" to craft the perfect System Instruction for your target task.
+```mermaid
+graph TD
+    A[Clean Transcript] --> B[Blog Post Generator]
+    A --> C[Social Hooks Generator]
+    A --> D[Email Newsletter Generator]
+    B --> E[Final Blog Post]
+    C --> F[5 Social Hooks - JSON]
+    D --> G[Newsletter Draft]
+```
 
-### Example Meta-Prompt
+This is the architecture of the Capstone Project you'll build at the end of this course.
+
+### Implementing Parallel Branches (Python with asyncio)
+
+```python
+import asyncio
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI()
+
+async def run_prompt_async(system: str, user_input: str, model: str = "gpt-4o", temp: float = 0.0) -> str:
+    response = await client.chat.completions.create(
+        model=model, temperature=temp,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user_input}
+        ]
+    )
+    return response.choices[0].message.content
+
+async def generate_all_assets(clean_transcript: str):
+    # Run 3 generators in parallel — much faster than sequential
+    blog, hooks, newsletter = await asyncio.gather(
+        run_prompt_async(system="Write a 600-word blog post...", user_input=clean_transcript, temp=0.7),
+        run_prompt_async(system="Generate 5 social media hooks as JSON...", user_input=clean_transcript),
+        run_prompt_async(system="Write an email newsletter...", user_input=clean_transcript, temp=0.5),
+    )
+    return blog, hooks, newsletter
+```
+
+---
+
+## 3. Meta-Prompting: AI That Writes Prompts
+
+**Meta-Prompting** is using an LLM to generate, critique, or optimize prompts. Instead of manually iterating on prompt wording, you ask a model to act as a "Prompt Engineer."
+
+This is surprisingly effective — LLMs have seen millions of prompts in their training data, so they have strong intuitions about what works.
+
+### Example: Generate a System Prompt
+
 ```text
-You are an expert prompt engineer. I want to build a tool that extracts invoices from PDFs. 
-Write a highly structured System Prompt that instructs a model to perform this task. 
-Include XML delimiters, strict JSON schemas, and safety guardrails for missing fields.
+You are an expert prompt engineer. I need a system prompt for the following use case:
+
+USE CASE: I'm building a tool that extracts invoice details from uploaded PDFs.
+The extracted data feeds into a PostgreSQL database.
+
+REQUIREMENTS:
+- The system prompt should define a clear role
+- Use XML delimiters to separate the PDF text from instructions
+- Output must be strict JSON matching a schema I'll provide
+- Include guardrails for: missing fields, non-invoice documents, multiple invoices in one PDF
+- Include safety rules against prompt injection
+
+Write the complete system prompt. Be specific and production-ready.
 ```
 
+### Example: Critique and Improve an Existing Prompt
+
+```text
+You are a prompt engineering auditor. Review the following prompt and identify weaknesses.
+For each weakness, explain the risk and suggest a specific fix.
+
+<prompt_to_review>
+You are a helpful assistant. Read the document and extract the important information.
+Return the results as JSON.
+</prompt_to_review>
+
+Score this prompt on:
+1. Role specificity (1-5)
+2. Output format clarity (1-5)
+3. Edge case handling (1-5)
+4. Security (1-5)
+5. Reproducibility (1-5)
+
+Then rewrite it as an improved version.
+```
+
+> **⚠️ Common Mistake:** Don't blindly trust meta-generated prompts. They're a starting point, not a finished product. Always test the generated prompt against your actual data and edge cases. I've seen meta-prompting produce beautifully structured prompts that completely fail on real-world inputs because the AI optimized for "looking professional" rather than "handling messy data."
+
 ---
 
-## 3. Creating a Multi-Stage Pipeline
+## 4. Orchestration Frameworks
 
-To build a content pipeline, you write a Python script that orchestrates the chain. Here is the conceptual flow:
+For production pipelines, you don't need to write all the boilerplate yourself. Several frameworks handle prompt chaining, model routing, and error handling:
 
-1. **Step 1 (Clean):** Input raw speech transcript -> output clean formatted text.
-2. **Step 2 (Extract):** Input clean text -> output JSON file of key talking points.
-3. **Step 3 (Generate):** Input JSON talking points -> output a draft email newsletter.
+| Framework | What It Does | Best For |
+|:---|:---|:---|
+| **[LangChain](https://python.langchain.com)** | Chains, agents, RAG, tool use, memory | General-purpose LLM applications |
+| **[LlamaIndex](https://www.llamaindex.ai)** | Data ingestion, indexing, RAG pipelines | Document Q&A and knowledge bases |
+| **[Instructor](https://github.com/jxnl/instructor)** | Structured output extraction | Schema-enforced data extraction |
+| **[Google Vertex AI Pipelines](https://cloud.google.com/vertex-ai)** | Managed ML + LLM pipelines | Enterprise, managed infrastructure |
+| **[CrewAI](https://www.crewai.com)** | Multi-agent orchestration | Complex tasks needing role-based agents |
+
+You don't *need* a framework — the raw API examples earlier in this lesson work perfectly for most use cases. But if you're building something with multiple steps, error handling, retries, and logging, a framework saves significant boilerplate.
 
 ---
 
-### ✍️ Concept Check
+## ✍️ Concept Check
 
-**Question:** Why is it better to chain prompts rather than sending one massive prompt containing all instructions?
+**Scenario:** You're processing 500 customer feedback surveys daily. The pipeline has 3 stages: (1) clean raw text, (2) classify sentiment, (3) generate a management summary. Stage 1 and 2 are straightforward; Stage 3 requires nuanced writing. You want to minimize API costs. What's the optimal model routing strategy?
 
-* [ ] **A)** Because chaining is the only way to activate high temperature settings.
-* [x] **B)** Because breaking a complex task into isolated stages reduces cognitive load on the token predictor, leading to higher accuracy and easier troubleshooting.
-* [ ] **C)** Because chaining prompts decreases the overall latency of the pipeline.
-* [ ] **D)** Because single prompts cannot handle XML delimiters.
+* [ ] **A)** Use GPT-4o for all three stages for maximum quality.
+* [ ] **B)** Use GPT-4o-mini for all three stages for minimum cost.
+* [x] **C)** Use GPT-4o-mini for Stages 1-2 (cleanup + classification) and GPT-4o for Stage 3 (creative summary).
+* [ ] **D)** Use a single mega-prompt to eliminate the overhead of multiple API calls.
 
 <details>
 <summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
 
-**Correct Answer: B**
+**Correct Answer: C**
 
-**Explanation:** Chaining isolates tasks so the model doesn't have to divide its attention between cleaning text, formatting tables, and drafting creative copy simultaneously. This drastically improves output quality and makes errors easy to isolate.
+**Explanation:** This is model routing in action. Stages 1 and 2 are deterministic, structured tasks (text cleanup and classification) — cheap models like GPT-4o-mini, Gemini Flash, or Claude Haiku handle these with near-identical accuracy to premium models. Stage 3 (management summary) requires nuanced writing quality, justifying a premium model. At 500 surveys/day, routing Stages 1-2 to a mini model can cut your API costs by 70%+ while maintaining output quality where it matters. Answer D (mega-prompt) would actually *increase* costs because you'd need a premium model for the entire bloated prompt.
 </details>
 
 ---
 
-## 🚀 What's Next?
-Now that you know how to build prompt pipelines, let's explore how to test, iterate, and evaluate your prompt designs before deploying them.
+## 📚 References & Further Reading
 
-* [Lesson 4.2: Evaluation & Iteration](./08-evaluation-iteration.mdx)
+- **LangChain Documentation**: [python.langchain.com/docs](https://python.langchain.com/docs)
+- **LlamaIndex Documentation**: [docs.llamaindex.ai](https://docs.llamaindex.ai)
+- **Wu et al. (2023)**: *"AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation"* — Microsoft's multi-agent framework paper
+- **Model Pricing Comparison**: [OpenAI Pricing](https://openai.com/pricing), [Anthropic Pricing](https://www.anthropic.com/pricing), [Google AI Pricing](https://ai.google.dev/pricing)
+- **Prompt Chaining Patterns**: Anthropic's guide on [chaining complex prompts](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/chain-prompts)
+
+---
+
+## 🚀 What's Next?
+
+You've built the pipeline. But how do you know it's actually *good*? A prompt that works on your 5 test cases might fail catastrophically on the 500th real-world input. In the next lesson, we learn to systematically test, score, and iterate on prompts — including using one AI model to evaluate another.
+
+* [Lesson 4.2: Evaluation & Iteration →](./08-evaluation-iteration.mdx)

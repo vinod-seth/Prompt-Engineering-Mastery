@@ -1,80 +1,285 @@
-# Lesson 3.2: Programmatic Outputs (JSON & Markdown)
+# Lesson 3.2: Programmatic Outputs (JSON, Schemas & Function Calling)
 
-If your prompt pipeline needs to feed its output to another piece of software (like writing database records, updating CRM fields, or rendering custom charts), raw conversational text is useless. You need **structured, machine-readable data**.
+If you're reading this course in order, you've already learned how to structure prompts, add examples, force reasoning, and defend against injection. But here's the thing — none of that matters if your model's output looks like this:
 
-In this lesson, we learn how to force LLMs to output strict, parsable JSON payloads and Markdown tables.
+> *"Sure! Here is the information you requested. The customer's name is Alice Smith and her email is alice@example.com. She seems to have a high urgency issue regarding..."*
 
----
+Try feeding that conversational mush into `JSON.parse()`. Your code crashes. Your pipeline breaks. Your Saturday disappears into debugging.
 
-## 1. The Challenge of Raw Outputs
-
-By default, an LLM might say:
-> *"Here is the information you requested. The customer name is Alice and her email is..."*
-
-This conversational filler ruins automated parsers. If we try to parse this as JSON, it throws an error. We must instruct the model to return **pure data** and nothing else.
+This lesson is about forcing LLMs to output **structured, machine-readable data** — clean JSON, strict schemas, and formatted tables — every single time. We'll cover three progressively more reliable approaches: prompt-based formatting, native JSON mode, and structured output APIs with function calling.
 
 ---
 
-## 2. Defining Schemas in the Prompt
+## 1. Level 1: Prompt-Based JSON (Works Everywhere, ~90% Reliable)
 
-To get reliable JSON, you must provide a **Schema definition** (the blueprint of the keys and data types you expect).
+The simplest approach is to embed a JSON schema directly in your prompt and instruct the model to output *only* valid JSON:
 
-### Example Prompt Template
 ```text
-Task: Extract customer profile details from the text below.
-Format: Output only a valid JSON object matching the schema below. Do not add any backticks, explanation, or conversational text.
+Extract customer details from the email below.
+Output ONLY a valid JSON object. No markdown code blocks, no explanation, no preamble.
 
+Schema:
 {
   "name": "string (full name)",
-  "email": "string (valid email address)",
-  "urgency": "string (high, medium, low)",
-  "action_required": "boolean (true if action is requested, false otherwise)"
+  "email": "string (email address or null if not found)",
+  "urgency": "high | medium | low",
+  "issue_type": "billing | technical | general",
+  "action_required": true | false
 }
 
-Input Context:
-"Hi! I'm John Doe. Can someone help me reset my password? I need this fixed today as I have a presentation at 3 PM. You can reach me at john@example.com."
+Email:
+<email>
+Hi! I'm John Doe. Can someone help me reset my password? I need this fixed today
+because I have a client presentation at 3 PM. You can reach me at john@example.com.
+</email>
 ```
 
-### The Resulting Model Output
+**Expected Output:**
 ```json
 {
   "name": "John Doe",
   "email": "john@example.com",
   "urgency": "high",
+  "issue_type": "technical",
   "action_required": true
 }
 ```
 
+### Why This Is Only ~90% Reliable
+
+Even with explicit instructions, models sometimes:
+- Wrap output in ` ```json ` markdown blocks (breaking parsers)
+- Add a conversational preamble: "Here's the extracted data:"
+- Hallucinate extra fields not in your schema
+- Output `"true"` (string) instead of `true` (boolean)
+
+> **💡 Pro Tip:** To strip common wrapping issues, add this post-processing in your code:
+> ```python
+> import json, re
+> 
+> def clean_and_parse(raw: str) -> dict:
+>     # Strip markdown code blocks
+>     cleaned = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw.strip())
+>     # Strip conversational preamble (anything before first '{')
+>     match = re.search(r'\{', cleaned)
+>     if match:
+>         cleaned = cleaned[match.start():]
+>     return json.loads(cleaned)
+> ```
+
 ---
 
-## 3. Advanced API Schemas (Structured Outputs)
+## 2. Level 2: Native JSON Mode (~99% Reliable)
 
-Modern APIs (like Google Gemini and OpenAI) support **Structured Outputs**. Instead of just pleading with the model to output JSON using text prompts, you can pass a formal JSON schema directly to the API call.
+Most major providers now offer a **JSON Mode** that constrains the model's token generation to only produce valid JSON. This is more reliable than prompt-based approaches because the constraint happens at the model level, not just in the instructions.
 
-The API forces the model's token selection weights to *only* generate tokens that conform to your schema, guaranteeing **100% valid JSON** every time.
+### OpenAI JSON Mode
+```python
+from openai import OpenAI
+client = OpenAI()
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    temperature=0.0,
+    response_format={"type": "json_object"},  # ← Forces valid JSON output
+    messages=[
+        {"role": "system", "content": """Extract customer details as JSON.
+Schema: {"name": "string", "email": "string|null", "urgency": "high|medium|low", "action_required": boolean}"""},
+        {"role": "user", "content": "Hi! I'm John Doe. I need my password reset ASAP. Email: john@example.com"}
+    ]
+)
+
+import json
+data = json.loads(response.choices[0].message.content)  # Guaranteed valid JSON
+```
+
+### Gemini JSON Mode
+```python
+from google import genai
+from google.genai.types import GenerateContentConfig
+
+client = genai.Client()
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="Hi! I'm John Doe. I need my password reset ASAP. Email: john@example.com",
+    config=GenerateContentConfig(
+        system_instruction="Extract customer details as JSON with keys: name, email, urgency, action_required",
+        response_mime_type="application/json",  # ← Forces JSON output
+        temperature=0.0,
+    )
+)
+```
+
+> **⚠️ Common Mistake:** JSON Mode guarantees *syntactically* valid JSON, but it does NOT guarantee the JSON follows your schema. The model might output `{"customer": "John Doe"}` instead of `{"name": "John Doe"}`. For schema enforcement, you need Level 3.
 
 ---
 
-### ✍️ Concept Check
+## 3. Level 3: Structured Outputs & Function Calling (100% Schema-Compliant)
 
-**Question:** Why is it beneficial to specify 'Do not wrap output in markdown code block markers' when requesting JSON programmatically?
+This is the gold standard. Instead of asking the model to produce JSON that matches a schema, you **enforce** the schema at the API level. The model's token generation is physically constrained to only produce output that conforms to your exact specification.
 
-* [ ] **A)** It makes the API call run 50% faster.
-* [x] **B)** It prevents the model from generating unnecessary '```json' wrapper text, allowing the raw string to be fed directly into JSON.parse() without cleaning.
-* [ ] **C)** It reduces the financial cost of the API call by half.
-* [ ] **D)** JSON is only compatible with HTML parsers.
+### OpenAI Structured Outputs
+```python
+from openai import OpenAI
+from pydantic import BaseModel
+
+client = OpenAI()
+
+class CustomerProfile(BaseModel):
+    name: str
+    email: str | None
+    urgency: str  # "high", "medium", or "low"
+    issue_type: str  # "billing", "technical", or "general"
+    action_required: bool
+
+response = client.beta.chat.completions.parse(
+    model="gpt-4o",
+    temperature=0.0,
+    messages=[
+        {"role": "system", "content": "Extract customer details from the email."},
+        {"role": "user", "content": "Hi! I'm John Doe. Password reset needed ASAP. john@example.com"}
+    ],
+    response_format=CustomerProfile,  # ← Pydantic model enforces exact schema
+)
+
+profile = response.choices[0].message.parsed  # Already typed as CustomerProfile
+print(profile.name)      # "John Doe"
+print(profile.urgency)   # "high"
+```
+
+### Gemini Structured Output with Schema
+```python
+from google import genai
+from google.genai.types import GenerateContentConfig
+
+client = genai.Client()
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="Hi! I'm John Doe. Password reset needed ASAP. john@example.com",
+    config=GenerateContentConfig(
+        system_instruction="Extract customer details from the email.",
+        response_mime_type="application/json",
+        response_schema={  # ← Enforced at token-generation level
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "email": {"type": "string"},
+                "urgency": {"type": "string", "enum": ["high", "medium", "low"]},
+                "issue_type": {"type": "string", "enum": ["billing", "technical", "general"]},
+                "action_required": {"type": "boolean"}
+            },
+            "required": ["name", "email", "urgency", "issue_type", "action_required"]
+        },
+        temperature=0.0,
+    )
+)
+```
+
+### Claude Tool-Based Structured Output
+Claude doesn't have a direct `response_format` parameter, but you can use the **tool_use** feature to enforce structured output:
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+response = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    max_tokens=1024,
+    temperature=0.0,
+    system="Extract customer details from emails using the provided tool.",
+    tools=[
+        {
+            "name": "extract_customer_profile",
+            "description": "Extracts structured customer information from an email.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Customer's full name"},
+                    "email": {"type": "string", "description": "Email address"},
+                    "urgency": {"type": "string", "enum": ["high", "medium", "low"]},
+                    "issue_type": {"type": "string", "enum": ["billing", "technical", "general"]},
+                    "action_required": {"type": "boolean"}
+                },
+                "required": ["name", "email", "urgency", "issue_type", "action_required"]
+            }
+        }
+    ],
+    tool_choice={"type": "tool", "name": "extract_customer_profile"},  # Force tool use
+    messages=[
+        {"role": "user", "content": "Hi! I'm John Doe. Password reset needed ASAP. john@example.com"}
+    ]
+)
+
+# Access the structured output
+tool_result = response.content[0].input  # Dict matching your schema exactly
+```
+
+---
+
+## 🔄 Comparison: Which Level Should You Use?
+
+| Approach | Reliability | Schema Enforcement | Works With | Best For |
+|:---|:---|:---|:---|:---|
+| **Prompt-based JSON** | ~90% | None (hope-based) | All models, all tiers | Quick prototyping, free-tier usage |
+| **JSON Mode** | ~99% | Syntax only | OpenAI, Gemini | Ensuring valid JSON without strict schemas |
+| **Structured Output** | 100% | Full schema + types | OpenAI, Gemini, Claude (via tools) | Production pipelines, data extraction at scale |
+
+> **💡 Pro Tip:** When building production systems, always start with Level 3 (Structured Outputs). If you need to support multiple providers, use a library like [Instructor](https://github.com/jxnl/instructor) which provides a unified structured output interface across OpenAI, Anthropic, and Google.
+
+---
+
+## 4. Markdown Table Outputs
+
+Not everything needs to be JSON. For human-readable structured output, Markdown tables are excellent — and models are very good at generating them:
+
+```text
+Analyze the following sales data and output a Markdown table.
+
+Columns: Product Name | Q1 Revenue | Q2 Revenue | Change (%) | Trend
+Sort by Q2 Revenue descending.
+In the Trend column, use ↑ for growth, ↓ for decline, → for flat (±2%).
+
+<data>
+Widget Pro: Q1 $45,000 Q2 $52,000
+Widget Basic: Q1 $30,000 Q2 $28,000
+Widget Enterprise: Q1 $120,000 Q2 $122,000
+Widget Starter: Q1 $8,000 Q2 $15,000
+</data>
+```
+
+---
+
+## ✍️ Concept Check
+
+**Scenario:** You're building a production pipeline that processes 10,000 customer emails daily and stores extracted profiles in a database. You're using prompt-based JSON extraction (Level 1). About 8% of outputs fail `JSON.parse()` due to markdown code block wrapping or conversational preamble. What's the best fix?
+
+* [ ] **A)** Add "IMPORTANT: Do not wrap in code blocks!!!" to your prompt (more emphatic instructions).
+* [x] **B)** Switch to Structured Outputs (Level 3) using your provider's schema enforcement API — this eliminates parsing failures entirely.
+* [ ] **C)** Reduce the temperature to 0.0 — this will prevent the model from adding extra text.
+* [ ] **D)** Add a regex post-processor to strip code blocks (keep using Level 1).
 
 <details>
 <summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
 
 **Correct Answer: B**
 
-**Explanation:** When LLMs output JSON, they often add markdown blocks (like \`\`\`json ... \`\`\`). Programmatic parsers will fail unless you strip those markers first. Instructing the model to omit them saves post-processing clean-up steps.
+**Explanation:** At 10,000 emails/day, an 8% failure rate means 800 broken records daily. Answer A (louder instructions) might reduce failures to 3-4% but won't eliminate them. Answer C (lower temperature) helps but doesn't guarantee format compliance. Answer D (regex cleanup) is a band-aid that creates maintenance burden and breaks on edge cases. Structured Outputs (Level 3) solve this at the architectural level — the model physically cannot produce non-conforming output because the token generation is constrained to your schema. For production workloads, always use the strongest guarantee available.
 </details>
 
 ---
 
-## 🚀 What's Next?
-Now that you can extract unstructured data into strict programmatic structures, let's explore Module 4, where we chain multiple prompts together to build complex automation engines.
+## 📚 References & Further Reading
 
-* [Lesson 4.1: Meta-Prompting & Prompt Chaining](./07-meta-chaining.mdx)
+- **OpenAI Structured Outputs**: [platform.openai.com/docs/guides/structured-outputs](https://platform.openai.com/docs/guides/structured-outputs)
+- **Gemini Structured Output**: [ai.google.dev/gemini-api/docs/structured-output](https://ai.google.dev/gemini-api/docs/structured-output)
+- **Claude Tool Use for Structured Data**: [docs.anthropic.com/en/docs/build-with-claude/tool-use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)
+- **Instructor Library** (unified structured output): [github.com/jxnl/instructor](https://github.com/jxnl/instructor) — supports OpenAI, Anthropic, Google, Mistral, and more
+- **Pydantic**: [docs.pydantic.dev](https://docs.pydantic.dev) — Python data validation used by OpenAI's structured outputs
+
+---
+
+## 🚀 What's Next?
+
+You can now extract structured data reliably from any model. But what happens when a task is too complex for a single prompt? In the next lesson, we'll chain multiple prompts together into automated pipelines — and even use AI to write better prompts.
+
+* [Lesson 4.1: Meta-Prompting & Prompt Chaining →](./07-meta-chaining.mdx)

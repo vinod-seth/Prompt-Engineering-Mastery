@@ -1,79 +1,227 @@
 # Lesson 2.2: Reasoned Prompting (Chain of Thought)
 
-Large Language Models do not calculate answers before outputting text. Because they predict the next token on the fly, if you ask a model a complex logic, math, or translation problem and demand a direct answer, it will often output the wrong answer instantly.
+Here's a failure mode that trips up almost everyone when they first start using LLMs for anything beyond simple Q&A: you ask the model a question that requires logical reasoning, and it confidently gives you the wrong answer.
 
-To fix this, we use **Reasoned Prompting (Chain-of-Thought)** to force the model to calculate its reasoning step-by-step before arriving at the final answer.
+Why? Because LLMs don't *think* before they speak. They predict the next token based on pattern matching — they're autocomplete engines, not calculators. If you ask "What's 17 × 24?" and demand a single number, the model might output "408" (correct) or "388" (wrong) with equal confidence. It never actually performed multiplication — it guessed based on patterns it saw during training.
 
----
-
-## 1. What is Chain-of-Thought (CoT)?
-
-**Chain-of-Thought (CoT)** prompts include explicit steps showing *how* to solve a problem. By writing out the reasoning path in the prompt's examples, the model learns to generate a similar reasoning path when tackling new questions.
-
-### Simple Zero-Shot CoT: "Think Step by Step"
-If you don't have examples, you can trigger basic reasoning by adding a magic suffix to your prompt:
-> **"Let's think step by step."**
-
-This simple phrase forces the model to allocate output tokens for reasoning, which dramatically improves performance on math word problems, logical deductions, and data parsing.
+**Reasoned Prompting** — also called **Chain-of-Thought (CoT)** — fixes this by forcing the model to "show its work" before arriving at a final answer. The intermediate reasoning tokens act as a working scratchpad, dramatically improving accuracy on logical, mathematical, and multi-step tasks.
 
 ---
 
-## 2. CoT Prompt Construction
+## 1. How Chain-of-Thought Works (And Why)
 
-Here is how you write a Zero-Shot CoT template:
+The core insight is beautifully simple: when a model generates reasoning steps as output tokens, those tokens become *context* for predicting the next tokens. Each step builds on the last, creating a logical chain that guides the model toward the correct conclusion.
+
+Without CoT, the model is trying to jump directly from question → answer. With CoT, it goes question → step 1 → step 2 → step 3 → answer. Those intermediate steps constrain the answer space.
+
+### Zero-Shot CoT: The One-Line Fix
+
+The easiest way to trigger chain-of-thought reasoning is to append a simple instruction to your prompt. This technique was discovered by Kojima et al. (2022) and is surprisingly effective:
+
+> **Append: "Think step by step before giving your final answer."**
+
+That's it. This single phrase improves performance on math, logic, and planning tasks by 20-40% across most models.
+
+### Real-World Example: Budget Approval
+
+**Without CoT (Direct Answer):**
+```text
+A department requested $45,000 for a new server. The IT budget has $120,000 remaining.
+Previous approved requests this quarter total $82,000. Should this request be approved?
+
+Answer with YES or NO.
+```
+Model response: `YES` ❌ (Wrong — $82K + $45K = $127K > $120K budget)
+
+**With CoT:**
+```text
+A department requested $45,000 for a new server. The IT budget has $120,000 remaining.
+Previous approved requests this quarter total $82,000. Should this request be approved?
+
+Think step by step. Show your calculations, then answer YES or NO.
+```
+Model response:
+> Step 1: Previous approvals = $82,000
+> Step 2: New request = $45,000
+> Step 3: Total if approved = $82,000 + $45,000 = $127,000
+> Step 4: Budget remaining = $120,000
+> Step 5: $127,000 > $120,000 — exceeds budget
+> Answer: **NO** ✅
+
+---
+
+## 2. Few-Shot CoT: Showing the Reasoning Path
+
+For more complex or domain-specific reasoning, provide examples that include the full reasoning chain — not just input-output pairs:
 
 ```text
-PUZZLE:
-{puzzle_input}
+You are a contract analyst. Determine if the contract clause contains a liability risk.
 
-INSTRUCTION:
-{reasoning_instruction}
+Example:
+Clause: "The vendor shall not be liable for any indirect, incidental, or consequential damages."
+Reasoning: This clause limits the vendor's liability to only direct damages. If the client
+  suffers lost revenue (indirect) or data breach costs (consequential) due to vendor
+  negligence, the vendor is not responsible. This is a significant liability gap.
+Risk Assessment: HIGH RISK — Client has limited recourse for non-direct damages.
+
+Example:
+Clause: "Both parties agree to indemnify each other against claims arising from their
+  respective negligence."
+Reasoning: This is a mutual indemnification clause. Each party is responsible for damages
+  caused by their own negligence. Risk is balanced and standard.
+Risk Assessment: LOW RISK — Standard mutual indemnification.
+
+Now analyze:
+Clause: "The service provider's total aggregate liability shall not exceed the fees paid
+  in the 12 months preceding the claim."
+Reasoning:
 ```
 
-### 🧪 Comparison Example
-
-Try testing a logic puzzle like:
-> *"A farmer has 15 sheep. All but 8 die. How many are left?"*
-
-* **Bad Instruction:** *"Answer with a single number."*
-  * **Model response:** often gets confused and performs subtraction $15-8=7$ (incorrect, since "all but 8 die" means 8 are alive).
-* **Good Instruction:** *"Let's think step by step. Explain your reasoning first, then conclude with the final number."*
-  * **Model response:** It reasons that "all but 8 die" means 8 sheep survived. Therefore, the answer is 8.
+> **💡 Pro Tip:** In few-shot CoT, the *quality* of your reasoning examples matters enormously. If your example reasoning is sloppy or skips steps, the model will mimic that sloppiness. Write your example reasoning the way you'd want a senior analyst to explain their thought process.
 
 ---
 
-## 3. Tree of Thoughts (ToT)
+## 3. Tree of Thoughts (ToT): Branching Reasoning
 
-For extremely complex planning or strategic tasks (like optimizing a project timeline or outlining a research paper structure), you can ask the model to evaluate multiple branches of thoughts:
+For complex planning, strategy, or creative problem-solving, linear CoT isn't enough. You need the model to **explore multiple approaches** before committing to one. This is called **Tree of Thoughts** (Yao et al., 2023).
 
-1. **Generate hypotheses:** "Create 3 distinct approaches to solve this problem."
-2. **Evaluate viability:** "For each approach, list its pros, cons, and probability of success."
-3. **Select the optimal path:** "Choose the best path and write the final solution."
+The pattern:
+1. **Generate** 3 distinct approaches to the problem
+2. **Evaluate** each approach's pros, cons, and feasibility
+3. **Select** the strongest approach and develop it fully
 
-This mimics human brain storming and prevents the model from locking into a bad initial assumption.
+### Example Prompt
+```text
+I need to reduce my SaaS application's API response time from 800ms to under 200ms.
+
+Step 1: Generate exactly 3 different approaches to solve this.
+Step 2: For each approach, list:
+  - Expected impact (how many ms saved)
+  - Implementation effort (days)
+  - Risk level (low/medium/high)
+  - Key assumption that could invalidate this approach
+Step 3: Select the best approach and write a detailed implementation plan.
+```
+
+This prevents the model from locking into the first idea that comes to mind — which is usually the most generic one.
 
 ---
 
-### ✍️ Concept Check
+## 🔄 Reasoning Across Models: Built-In vs. Prompted CoT
 
-**Question:** Why does Zero-Shot Chain of Thought ('think step by step') work?
+Here's where things get really interesting. Some modern models now have **built-in reasoning capabilities** — they automatically "think" before responding, without you needing to prompt for it. Understanding when to use prompted CoT vs. built-in reasoning is a key skill.
 
-* [ ] **A)** It triggers a database search in the model's server.
-* [x] **B)** It forces the model to generate intermediate tokens of reasoning, which act as a working scratchpad before it commits to a final prediction.
-* [ ] **C)** It decreases the cost of the model API.
-* [ ] **D)** It overrides the model's temperature settings.
+### OpenAI's Reasoning Models (o3, o4-mini)
+OpenAI's o-series models perform internal chain-of-thought reasoning **automatically**. You don't need to say "think step by step" — in fact, it can hurt performance:
+
+```python
+from openai import OpenAI
+client = OpenAI()
+
+# With o3/o4-mini: DON'T add "think step by step" — it's redundant
+response = client.chat.completions.create(
+    model="o3",  # or "o4-mini" for faster/cheaper reasoning
+    messages=[
+        {"role": "user", "content": """A department requested $45,000 for a server.
+IT budget remaining: $120,000. Previous approvals this quarter: $82,000.
+Should this request be approved?"""}
+    ]
+    # Note: temperature is fixed at 1 for o-series models
+)
+```
+
+> **⚠️ Important:** With o-series models, you pay for "reasoning tokens" (the hidden thinking) in addition to output tokens. A simple question that costs $0.001 on GPT-4o might cost $0.02 on o3 because the model is thinking extensively. Use o-series for genuinely complex reasoning tasks, not simple classification.
+
+### Claude's Extended Thinking
+Anthropic's Claude offers an "extended thinking" mode where the model explicitly shows its reasoning process in a separate `thinking` block:
+
+```python
+import anthropic
+client = anthropic.Anthropic()
+
+response = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    max_tokens=8000,
+    temperature=1,  # Required for extended thinking
+    thinking={
+        "type": "enabled",
+        "budget_tokens": 5000  # How many tokens Claude can use for thinking
+    },
+    messages=[
+        {"role": "user", "content": """A department requested $45,000 for a server.
+IT budget remaining: $120,000. Previous approvals this quarter: $82,000.
+Should this request be approved? Explain your reasoning."""}
+    ]
+)
+
+# Access the thinking and response separately
+for block in response.content:
+    if block.type == "thinking":
+        print("Claude's reasoning:", block.thinking)
+    elif block.type == "text":
+        print("Final answer:", block.text)
+```
+
+### Gemini's Thinking Mode
+Gemini 2.5 models support a thinking mode that allows you to control the thinking budget:
+
+```python
+from google import genai
+from google.genai.types import GenerateContentConfig, ThinkingConfig
+
+client = genai.Client()
+response = client.models.generate_content(
+    model="gemini-2.5-pro",
+    contents="A department requested $45,000 for a server. IT budget remaining: $120,000. Previous approvals: $82,000. Should this be approved?",
+    config=GenerateContentConfig(
+        thinking_config=ThinkingConfig(thinking_budget=5000)
+    )
+)
+```
+
+### When to Use What?
+
+| Scenario | Best Approach | Why |
+|:---|:---|:---|
+| Simple math/logic | Zero-Shot CoT ("think step by step") on GPT-4o/Claude/Gemini | Cheap and effective |
+| Complex multi-step reasoning | o3 / o4-mini (OpenAI) or Extended Thinking (Claude) | Built-in reasoning is more reliable than prompted CoT |
+| Strategic planning with alternatives | Tree of Thoughts prompt on any model | Forces exploration of multiple options |
+| Tight budget, many queries | Standard model + prompted CoT | Reasoning models cost 5-20× more per query |
+| Coding/debugging | o3 or Claude with extended thinking | These tasks benefit most from deep reasoning |
+
+---
+
+## ✍️ Concept Check
+
+**Scenario:** You're using GPT-4o to analyze customer contracts and flag liability risks. The model frequently misidentifies standard clauses as "high risk" because it jumps to conclusions without reading the full clause. Which approach would most improve accuracy?
+
+* [ ] **A)** Switch to a smaller model — it will be faster and more focused.
+* [ ] **B)** Add "think step by step" to the end of every prompt and use GPT-4o.
+* [x] **C)** Use Few-Shot CoT: provide 3-4 examples showing the full reasoning chain (clause → analysis of each element → risk assessment), so the model learns to analyze before judging.
+* [ ] **D)** Remove all instructions and let the model figure out the task from context.
 
 <details>
 <summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
 
-**Correct Answer: B**
+**Correct Answer: C**
 
-**Explanation:** Because LLMs generate text token-by-token, they cannot plan ahead. Forcing them to output their reasoning path first allows previous outputs to serve as context for predicting the final correct token.
+**Explanation:** While Zero-Shot CoT (answer B) would help somewhat, the problem here is domain-specific: the model doesn't know how *you* define "high risk" vs. "standard" clauses. Few-Shot CoT provides both the reasoning method AND the domain calibration. By showing examples of your expert reasoning, you teach the model both *how to think* and *what standards to apply*. For critical business applications like contract analysis, few-shot CoT consistently outperforms zero-shot CoT.
 </details>
 
 ---
 
-## 🚀 What's Next?
-Now that you know how to build reasoned structures, let's explore Module 3, where we learn how to structure massive text datasets using delimiters and prevent AI hallucinations.
+## 📚 References & Further Reading
 
-* [Lesson 3.1: Delimiters, System Prompts, and Guardrails](./05-delimiters-guardrails.mdx)
+- **Kojima et al. (2022)**: *"Large Language Models are Zero-Shot Reasoners"* — the paper that discovered "Let's think step by step" — [arXiv:2205.11916](https://arxiv.org/abs/2205.11916)
+- **Wei et al. (2022)**: *"Chain-of-Thought Prompting Elicits Reasoning in Large Language Models"* — the foundational CoT paper from Google Research — [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+- **Yao et al. (2023)**: *"Tree of Thoughts: Deliberate Problem Solving with Large Language Models"* — [arXiv:2305.10601](https://arxiv.org/abs/2305.10601)
+- **OpenAI o-series docs**: [platform.openai.com/docs/guides/reasoning](https://platform.openai.com/docs/guides/reasoning)
+- **Claude Extended Thinking**: [docs.anthropic.com/en/docs/build-with-claude/extended-thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+
+---
+
+## 🚀 What's Next?
+
+You now know how to make models *think*. But thinking is only half the battle — you also need to make them *safe*. In the next module, we'll learn how to protect your prompts from injection attacks, isolate user data with delimiters, and build production-grade guardrails.
+
+* [Lesson 3.1: Delimiters, System Prompts, and Guardrails →](./05-delimiters-guardrails.mdx)

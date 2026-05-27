@@ -1,85 +1,226 @@
 # Lesson 1.2: The Anatomy of a Perfect Prompt
 
-If you write prompts like you're talking to a search engine or chatting with a friend, you will get inconsistent, unpredictable answers. To write a perfect prompt that succeeds on the first try, you need to structure your request into four distinct pillars.
+Here's a hard truth I learned the painful way: if you write prompts like you're texting a friend or typing into Google, you'll get inconsistent, unpredictable garbage about 60% of the time. The other 40%? Lucky accidents you can't reproduce.
+
+The fix is deceptively simple. Every reliable prompt — whether you're using ChatGPT, Claude, Gemini, or an open-source model — can be decomposed into **four structural pillars**. Master these four, and you stop guessing and start engineering.
 
 ---
 
-## 🏛️ The 4-Part Prompt Framework
+## 🏛️ The 4-Pillar Prompt Framework
 
-Every robust prompt should isolate the following four elements clearly:
+### Pillar 1: Role / Persona
+**"Who is the model?"**
 
-1. **Role / Persona (Who is the model?):** Sets the expert boundaries, tone, and domain limits.
-2. **Context (What is the background?):** Providing the raw materials, documents, constraints, or datasets to analyze.
-3. **Instructions / Task (What must it do?):** Precise actions using imperative verbs (e.g., "Analyze," "Reformat," "Check").
-4. **Constraints & Output Formatting (How must it return it?):** Specific formats like JSON, bulleted Markdown, or restricted lengths.
+Setting a role constrains the model's vocabulary, tone, and domain expertise. Without a role, the model defaults to a generic, Wikipedia-flavored assistant voice.
+
+```text
+❌ Weak: "Help me write an email."
+✅ Strong: "You are a senior B2B sales copywriter with 15 years of experience in SaaS."
+```
+
+> **💡 Pro Tip:** Be specific about the persona's experience level and domain. "You are a doctor" produces very different output than "You are a board-certified pediatric cardiologist at a teaching hospital." The more specific the role, the more constrained and useful the output.
+
+### Pillar 2: Context / Background
+**"What does the model need to know?"**
+
+This is where you feed the raw materials — documents, data tables, customer profiles, code snippets, or constraints. Without context, the model hallucinates to fill the gaps.
+
+### Pillar 3: Instructions / Task
+**"What must it do?"**
+
+Use **imperative verbs** — Analyze, Extract, Reformat, Compare, Classify, Summarize. Avoid vague instructions like "help me with" or "tell me about."
+
+### Pillar 4: Constraints & Output Format
+**"How must it return results?"**
+
+Specify the exact output structure: JSON schema, bullet list, markdown table, character limit, language, things to exclude.
 
 ---
 
 ## 🎛️ Prompt Template Blueprint
 
-In a programmatic pipeline, your prompt template is stored as a string with placeholders (variables) that you inject at runtime:
+In a production pipeline, your prompt template is stored as a string with **variables** (placeholders) that you inject at runtime:
 
 ```text
 ROLE: You are an expert {persona}.
 
 CONTEXT DATA:
----
+<context>
 {input_data}
----
+</context>
 
 TASK:
 {task_description}
 
-CONSTRAINTS / FORMATTING:
-- Restrict output format exactly to {output_format}.
-- Do not add conversational intro or outro text.
+CONSTRAINTS:
+- Output format: {output_format}
+- Do NOT include conversational preamble, disclaimers, or sign-off text.
+- If any required field is missing from the context, output "MISSING" as the value.
 ```
 
-### ⚙️ Runtime Variable Injection Example
-If you assign the following Python variables:
-* `persona` = `"Technical Project Manager"`
-* `input_data` = `"Sarah will update the database schema by Friday. John will coordinate with marketing."`
-* `task_description` = `"Extract action items, assignees, and deadlines."`
-* `output_format` = `"A numbered markdown list"`
-
-The final prompt automatically compiles into a clean, structured command ready for the LLM API.
+> **⚠️ Common Mistake:** Notice the `<context>` XML tags wrapping the input data. This isn't optional decoration — it's a critical delimiter that prevents the model from confusing your data with your instructions. We'll go deeper into this in Lesson 3.1, but start using delimiters from day one.
 
 ---
 
-## 👥 How the 4-part framework applies across roles
+## 🔄 How Each Model Handles the 4 Pillars
 
-See how the framework translates into specific professional fields:
+Each major provider structures the Role/Context/Task separation differently in their API. Understanding this is essential for writing portable prompts.
+
+### OpenAI (GPT-4o, GPT-4.1)
+OpenAI uses a **messages array** with explicit `system`, `user`, and `assistant` roles:
+
+```python
+from openai import OpenAI
+client = OpenAI()
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    temperature=0.0,
+    messages=[
+        {
+            "role": "system",        # ← Pillar 1 (Role) + Pillar 4 (Constraints)
+            "content": """You are a senior technical project manager.
+Extract action items, assignees, and deadlines from meeting transcripts.
+Output as a numbered markdown list. No preamble."""
+        },
+        {
+            "role": "user",          # ← Pillar 2 (Context) + Pillar 3 (Task)
+            "content": """Here is today's standup transcript:
+<transcript>
+Sarah: I'll finish the DB schema migration by Friday.
+John: I'm coordinating with marketing on the Q3 launch. Need assets by Wednesday.
+Lisa: Blocked on the API review — waiting for security team sign-off.
+</transcript>
+
+Extract all action items with assignees and deadlines."""
+        }
+    ]
+)
+```
+
+### Anthropic (Claude Sonnet 4, Claude Opus 4)
+Claude uses a dedicated `system` parameter (not inside the messages array) and strongly prefers **XML-tagged structure**:
+
+```python
+import anthropic
+client = anthropic.Anthropic()
+
+response = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    max_tokens=1024,
+    temperature=0.0,
+    system="""You are a senior technical project manager.
+Extract action items, assignees, and deadlines from meeting transcripts.
+Output as a numbered markdown list. No preamble.
+If a deadline is not explicitly stated, write "No deadline specified".""",
+    messages=[
+        {
+            "role": "user",
+            "content": """Here is today's standup transcript:
+<transcript>
+Sarah: I'll finish the DB schema migration by Friday.
+John: I'm coordinating with marketing on the Q3 launch. Need assets by Wednesday.
+Lisa: Blocked on the API review — waiting for security team sign-off.
+</transcript>
+
+Extract all action items with assignees and deadlines."""
+        }
+    ]
+)
+```
+
+### Google (Gemini 2.5 Pro, Gemini 2.5 Flash)
+Gemini uses `system_instruction` for the role/constraints and `contents` for the user input:
+
+```python
+from google import genai
+
+client = genai.Client()
+response = client.models.generate_content(
+    model="gemini-2.5-pro",
+    config={
+        "system_instruction": """You are a senior technical project manager.
+Extract action items, assignees, and deadlines from meeting transcripts.
+Output as a numbered markdown list. No preamble.
+If a deadline is not explicitly stated, write "No deadline specified".""",
+        "temperature": 0.0,
+    },
+    contents="""Here is today's standup transcript:
+<transcript>
+Sarah: I'll finish the DB schema migration by Friday.
+John: I'm coordinating with marketing on the Q3 launch. Need assets by Wednesday.
+Lisa: Blocked on the API review — waiting for security team sign-off.
+</transcript>
+
+Extract all action items with assignees and deadlines."""
+)
+```
+
+> **💡 Key Insight:** Notice that all three APIs physically separate the "system-level" instructions from the "user-level" input. This separation isn't just organizational — it's a **security boundary**. System instructions get higher priority than user messages, which is how you prevent prompt injection attacks (covered in Lesson 3.1).
+
+---
+
+## 👥 The Framework in Action — Real Role Examples
 
 <Tabs>
   <Tab label="📣 Marketer">
-    * **Role:** Direct-response growth marketer.
-    * **Context:** Product benefits sheet and target customer demographic profiles.
-    * **Task:** Craft 3 variants of email subject lines.
-    * **Constraints:** Must be under 60 characters, with high open rate appeal.
+    * **Role:** "You are a direct-response growth marketer specializing in B2C e-commerce email campaigns."
+    * **Context:** Product benefits sheet + target customer demographic profiles.
+    * **Task:** "Generate 5 email subject line variants for the Spring Sale campaign."
+    * **Constraints:** Each subject line must be under 50 characters, include one emoji, and avoid spam trigger words like "FREE" or "ACT NOW".
   </Tab>
   <Tab label="🔬 Researcher">
-    * **Role:** Scientific research database analyst.
-    * **Context:** Text snippet from a journal article PDF.
-    * **Task:** Extract methodologies and sample sizes.
-    * **Constraints:** Output as a Markdown table. Do not make assumptions.
+    * **Role:** "You are a biomedical research analyst with expertise in systematic reviews."
+    * **Context:** Abstract from a clinical trial PDF.
+    * **Task:** "Extract the study methodology, sample size, primary outcome, and p-value."
+    * **Constraints:** Output as a Markdown table with columns [Field, Value, Page Reference]. If a field is not found, write "NOT REPORTED". Do not infer or assume values.
   </Tab>
   <Tab label="📋 Project Manager">
-    * **Role:** Technical Project Manager.
-    * **Context:** Raw meeting transcripts containing random side talks.
-    * **Task:** Filter conversations to build a task checklist.
-    * **Constraints:** Map tasks as key/value pairs in JSON format: `{"task": "...", "assignee": "..."}`.
+    * **Role:** "You are a certified PMP technical project manager at a mid-size SaaS company."
+    * **Context:** Raw Zoom meeting transcript (30 min) containing side conversations and off-topic banter.
+    * **Task:** "Filter the transcript to extract only actionable items. Build a task list."
+    * **Constraints:** Output as JSON: `[{"task": "...", "assignee": "...", "deadline": "...", "priority": "high|medium|low"}]`. Ignore social chitchat.
   </Tab>
   <Tab label="💼 Analyst">
-    * **Role:** IT operations auditor.
-    * **Context:** Server log reports.
-    * **Task:** Identify the IP addresses with the highest error rates.
-    * **Constraints:** Restrict response to a bulleted list of IPs and their incident frequencies.
+    * **Role:** "You are a senior IT operations analyst specializing in incident triage."
+    * **Context:** 48 hours of server access logs (CSV format).
+    * **Task:** "Identify the top 5 IP addresses with the highest error rates (HTTP 5xx)."
+    * **Constraints:** Output as a markdown table sorted by error count descending. Include columns: IP, Error Count, Most Common Error Code, First Seen, Last Seen.
   </Tab>
 </Tabs>
 
 ---
 
-## 🚀 What's Next?
-Now that you can write a structured, perfect prompt, click below to proceed to Week 2, where we will program the model by providing examples rather than just instructions.
+## ✍️ Concept Check
 
-* [Lesson 2.1: Few-Shot Prompting & In-Context Learning](./03-few-shot-prompting.mdx)
+**Scenario:** You're building a customer feedback classifier. Your prompt says: *"Read the review and tell me if it's positive or negative."* The model keeps adding lengthy explanations and sometimes outputs "mixed" even though you only want binary classification. What's the most impactful fix?
+
+* [x] **A)** Add explicit Constraints (Pillar 4): "Output only 'POSITIVE' or 'NEGATIVE'. No explanation. No other text."
+* [ ] **B)** Increase the temperature to encourage more decisive responses.
+* [ ] **C)** Switch to a larger model — smaller models can't do classification.
+* [ ] **D)** Add "Please" to the prompt to make the model more compliant.
+
+<details>
+<summary><b>🔑 Click to Reveal Answer & Explanation</b></summary>
+
+**Correct Answer: A**
+
+**Explanation:** The original prompt violated Pillar 4 — it had no output constraints. Without explicit formatting rules, the model defaults to its training behavior: conversational, hedging, verbose. Adding strict constraints ("Output only X or Y, nothing else") is the single highest-leverage fix for most prompt failures. This is true across GPT, Claude, and Gemini alike.
+</details>
+
+---
+
+## 📚 References & Further Reading
+
+- **OpenAI Prompt Engineering Guide**: [platform.openai.com/docs/guides/prompt-engineering](https://platform.openai.com/docs/guides/prompt-engineering)
+- **Anthropic's Prompt Engineering Guide**: [docs.anthropic.com/en/docs/build-with-claude/prompt-engineering](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering)
+- **Google's Prompt Engineering Guide**: [ai.google.dev/gemini-api/docs/prompting-strategies](https://ai.google.dev/gemini-api/docs/prompting-strategies)
+- **Zamfirescu-Pereira et al. (2023)**: *"Why Johnny Can't Prompt"* — research on how non-experts struggle with unstructured prompting
+
+---
+
+## 🚀 What's Next?
+
+You've got the framework. But here's the thing — sometimes instructions alone aren't enough. If you need the model to match a very specific tone, formatting style, or classification scheme, you're better off *showing* it what you want rather than *telling* it. That's the power of few-shot prompting.
+
+* [Lesson 2.1: Few-Shot Prompting & In-Context Learning →](./03-few-shot-prompting.mdx)
