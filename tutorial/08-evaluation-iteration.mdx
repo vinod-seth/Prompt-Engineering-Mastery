@@ -156,8 +156,6 @@ Respond ONLY with JSON: {{"accuracy": int, "completeness": int, "formatting": in
 
 ## 🔷 3. Prompt Regression & Version-and-Test Code
 
-*Non-technical readers: skip ahead to the [Real Evaluation Metrics (Beyond Vibes)](#5-real-evaluation-metrics-beyond-vibes) section below.*
-
 **Prompt regression** is when you update a prompt to fix one bug and accidentally break something that was previously working. This is the prompt engineering equivalent of introducing a software bug while fixing another one.
 
 It happens more often than you'd think. You add a constraint to handle empty inputs, and now the model is overly cautious and refuses to process valid short inputs. You tighten the JSON schema, and the model starts hallucinating values to fill required fields.
