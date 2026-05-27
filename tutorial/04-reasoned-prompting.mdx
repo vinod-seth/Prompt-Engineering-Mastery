@@ -6,9 +6,18 @@ Why? Because LLMs don't *think* before they speak. They predict the next token b
 
 **Reasoned Prompting** — also called **Chain-of-Thought (CoT)** — fixes this by forcing the model to "show its work" before arriving at a final answer. The intermediate reasoning tokens act as a working scratchpad, dramatically improving accuracy on logical, mathematical, and multi-step tasks.
 
+> **📍 Lesson Roadmap:**
+> | Section | Audience |
+> |:---|:---|
+> | 1. How Chain-of-Thought Works | 🟢 Everyone |
+> | 2. Few-Shot CoT | 🟢 Everyone |
+> | 3. Tree of Thoughts (ToT) | 🟢 Everyone |
+> | 4. Reasoning Across Models | 🔷 Technical — Python API syntax |
+> | Concept Check | 🟢 Everyone |
+
 ---
 
-## 1. How Chain-of-Thought Works (And Why)
+## 🟢 1. How Chain-of-Thought Works (And Why)
 
 The core insight is beautifully simple: when a model generates reasoning steps as output tokens, those tokens become *context* for predicting the next tokens. Each step builds on the last, creating a logical chain that guides the model toward the correct conclusion.
 
@@ -50,7 +59,7 @@ Model response:
 
 ---
 
-## 2. Few-Shot CoT: Showing the Reasoning Path
+## 🟢 2. Few-Shot CoT: Showing the Reasoning Path
 
 For more complex or domain-specific reasoning, provide examples that include the full reasoning chain — not just input-output pairs:
 
@@ -81,7 +90,7 @@ Reasoning:
 
 ---
 
-## 3. Tree of Thoughts (ToT): Branching Reasoning
+## 🟢 3. Tree of Thoughts (ToT): Branching Reasoning
 
 For complex planning, strategy, or creative problem-solving, linear CoT isn't enough. You need the model to **explore multiple approaches** before committing to one. This is called **Tree of Thoughts** (Yao et al., 2023).
 
@@ -107,7 +116,9 @@ This prevents the model from locking into the first idea that comes to mind — 
 
 ---
 
-## 🔄 Reasoning Across Models: Built-In vs. Prompted CoT
+## 🔷 4. Reasoning Across Models: Built-In vs. Prompted CoT
+
+*Non-technical readers: skip ahead to the [Concept Check](#concept-check) below.*
 
 Here's where things get really interesting. Some modern models now have **built-in reasoning capabilities** — they automatically "think" before responding, without you needing to prompt for it. Understanding when to use prompted CoT vs. built-in reasoning is a key skill.
 
@@ -191,7 +202,7 @@ response = client.models.generate_content(
 
 ---
 
-## ✍️ Concept Check
+## 🟢 Concept Check
 
 **Scenario:** You're using GPT-4o to analyze customer contracts and flag liability risks. The model frequently misidentifies standard clauses as "high risk" because it jumps to conclusions without reading the full clause. Which approach would most improve accuracy?
 

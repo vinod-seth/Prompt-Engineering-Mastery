@@ -4,9 +4,18 @@ Here's a hard truth I learned the painful way: if you write prompts like you're 
 
 The fix is deceptively simple. Every reliable prompt — whether you're using ChatGPT, Claude, Gemini, or an open-source model — can be decomposed into **four structural pillars**. Master these four, and you stop guessing and start engineering.
 
+> **📍 Lesson Roadmap:**
+> | Section | Audience |
+> |:---|:---|
+> | 1. The 4-Pillar Framework | 🟢 Everyone |
+> | 2. Prompt Template Blueprint | 🟢 Everyone |
+> | 3. Model API Syntax | 🔷 Technical — Python SDK code for OpenAI, Claude, Gemini |
+> | 4. Framework in Action | 🟢 Everyone |
+> | Concept Check | 🟢 Everyone |
+
 ---
 
-## 🏛️ The 4-Pillar Prompt Framework
+## 🟢 1. The 4-Pillar Prompt Framework
 
 ### Pillar 1: Role / Persona
 **"Who is the model?"**
@@ -37,7 +46,7 @@ Specify the exact output structure: JSON schema, bullet list, markdown table, ch
 
 ---
 
-## 🎛️ Prompt Template Blueprint
+## 🟢 2. Prompt Template Blueprint
 
 In a production pipeline, your prompt template is stored as a string with **variables** (placeholders) that you inject at runtime:
 
@@ -62,7 +71,9 @@ CONSTRAINTS:
 
 ---
 
-## 🔄 How Each Model Handles the 4 Pillars
+## 🔷 3. How Each Model Handles the 4 Pillars
+
+*Non-technical readers: skip ahead to the [Concept Check](#concept-check) below.*
 
 Each major provider structures the Role/Context/Task separation differently in their API. Understanding this is essential for writing portable prompts.
 
@@ -160,7 +171,7 @@ Extract all action items with assignees and deadlines."""
 
 ---
 
-## 👥 The Framework in Action — Real Role Examples
+## 🟢 4. The Framework in Action — Real Role Examples
 
 <Tabs>
   <Tab label="📣 Marketer">
@@ -191,7 +202,7 @@ Extract all action items with assignees and deadlines."""
 
 ---
 
-## ✍️ Concept Check
+## 🟢 Concept Check
 
 **Scenario:** You're building a customer feedback classifier. Your prompt says: *"Read the review and tell me if it's positive or negative."* The model keeps adding lengthy explanations and sometimes outputs "mixed" even though you only want binary classification. What's the most impactful fix?
 

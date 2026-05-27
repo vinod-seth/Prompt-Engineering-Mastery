@@ -4,9 +4,19 @@ Here's an uncomfortable truth that most prompt engineering tutorials skip: **a p
 
 The difference between an amateur and a professional prompt engineer is not the quality of their first draft — it's their **evaluation and iteration discipline**. This lesson teaches you how to systematically test, score, and improve prompts before (and after) they hit production.
 
+> **📍 Lesson Roadmap:**
+> | Section | Audience |
+> |:---|:---|
+> | 1. The Prompt Evaluation Matrix | 🟢 Everyone |
+> | 2. LLM-as-Judge Concepts | 🟢 Everyone |
+> | 3. Prompt Regression & Version-and-Test Code | 🔷 Technical — Python evaluation code |
+> | 4. A/B Testing Prompts in Production | 🔷 Technical — A/B testing Python script |
+> | 5. Real Evaluation Metrics | 🟢 Everyone |
+> | Concept Check | 🟢 Everyone |
+
 ---
 
-## 1. The Prompt Evaluation Matrix
+## 🟢 1. The Prompt Evaluation Matrix
 
 Stop judging prompts by "vibes." Build an **evaluation matrix** — a spreadsheet or script that runs your prompt against a diverse test suite and scores the outputs objectively.
 
@@ -93,7 +103,7 @@ print(f"Format compliance: {passed}/{len(results)} ({100*passed/len(results):.0f
 
 ---
 
-## 2. LLM-as-Judge: Using AI to Evaluate AI
+## 🟢 2. LLM-as-Judge: Using AI to Evaluate AI
 
 Here's a technique that's become industry-standard: use a *different* model to evaluate the output of your primary model. This is called **LLM-as-Judge** and it's surprisingly effective for scoring subjective quality dimensions like tone, helpfulness, and completeness.
 
@@ -143,7 +153,9 @@ Respond ONLY with JSON: {{"accuracy": int, "completeness": int, "formatting": in
 
 ---
 
-## 3. Prompt Regression Testing
+## 🔷 3. Prompt Regression & Version-and-Test Code
+
+*Non-technical readers: skip ahead to the [Real Evaluation Metrics (Beyond Vibes)](#5-real-evaluation-metrics-beyond-vibes) section below.*
 
 **Prompt regression** is when you update a prompt to fix one bug and accidentally break something that was previously working. This is the prompt engineering equivalent of introducing a software bug while fixing another one.
 
@@ -188,7 +200,7 @@ version_prompt(
 
 ---
 
-## 4. A/B Testing Prompts in Production
+## 🔷 4. A/B Testing Prompts in Production
 
 Once your prompt passes the test suite, you still don't know how it performs on *real* production data. A/B testing lets you compare two prompt versions on live traffic:
 
@@ -221,7 +233,7 @@ def get_prompt_version(user_id: str, candidate_pct: float = 0.1) -> str:
 
 ---
 
-## 5. Real Evaluation Metrics (Beyond Vibes)
+## 🟢 5. Real Evaluation Metrics (Beyond Vibes)
 
 For automated evaluation at scale, these established NLP metrics are your friends:
 
@@ -238,7 +250,7 @@ For automated evaluation at scale, these established NLP metrics are your friend
 
 ---
 
-## ✍️ Concept Check
+## 🟢 Concept Check
 
 **Scenario:** You updated your production prompt to better handle Spanish-language inputs. Your test suite shows 48/50 tests passing (up from 45/50). But two tests that previously passed — both involving very short English inputs (< 10 words) — now fail. The model incorrectly flags them as "insufficient context." What should you do?
 

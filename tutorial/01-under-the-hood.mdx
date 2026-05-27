@@ -6,7 +6,18 @@ That distinction matters because it explains *why* prompts work the way they do,
 
 ---
 
-## 1. Tokens: The Atoms of LLM Processing
+> **📍 Lesson Roadmap:**
+> | Section | Audience |
+> |:---|:---|
+> | 1. Tokens | 🟢 Everyone |
+> | 2. Context Windows | 🟢 Everyone |
+> | 3. Temperature & Top-P | 🟢 Everyone |
+> | API Parameter Syntax | 🔷 Technical — Python SDK code for OpenAI, Claude, Gemini |
+> | Concept Check | 🟢 Everyone |
+
+---
+
+## 🟢 1. Tokens: The Atoms of LLM Processing
 
 LLMs don't read text letter-by-letter or word-by-word. They break text into fragments called **tokens** — sub-word units that the model was trained to recognize.
 
@@ -28,7 +39,7 @@ LLMs don't read text letter-by-letter or word-by-word. They break text into frag
 
 ---
 
-## 2. Context Windows: The Model's Working Memory
+## 🟢 2. Context Windows: The Model's Working Memory
 
 The **context window** is the total number of tokens a model can hold in a single conversation — including your system prompt, all prior messages, the current user input, *and* the model's own response.
 
@@ -57,7 +68,7 @@ Research from Stanford (Liu et al., 2023) showed that LLMs perform best when cri
 
 ---
 
-## 3. Controlling Randomness: Temperature and Top-P
+## 🟢 3. Controlling Randomness: Temperature and Top-P
 
 When an LLM predicts the next token, it doesn't pick one — it generates a probability distribution over its entire vocabulary (often 100K+ tokens). The parameters **Temperature** and **Top-P** control how the model samples from that distribution.
 
@@ -91,7 +102,9 @@ Instead of scaling probabilities like temperature, Top-P *truncates* the candida
 
 ---
 
-## ⚙️ Model-Specific API Parameter Syntax
+## 🔷 Model-Specific API Parameter Syntax
+
+*Non-technical readers: skip ahead to the [Concept Check](#concept-check) below.*
 
 Here's how you set these parameters in each major provider's API:
 
@@ -145,7 +158,7 @@ response = client.models.generate_content(
 
 ---
 
-## ✍️ Concept Check
+## 🟢 Concept Check
 
 **Scenario:** You're building a customer support bot that classifies incoming tickets into categories (Billing, Technical, General) and extracts the customer's account ID. Which configuration is correct?
 

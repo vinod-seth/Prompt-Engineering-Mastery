@@ -4,9 +4,22 @@ Welcome to your Capstone Project. This is where everything comes together — th
 
 You will build a **production-grade, multi-stage prompt pipeline** that transforms raw, unstructured audio transcription data into three polished marketing assets. And here's the twist: you'll test it on **at least two different LLM providers** to understand how model differences affect real pipeline behavior.
 
+> **📍 Lesson Roadmap:**
+> | Section / Step | Audience |
+> |:---|:---|
+> | 1. Project Goal | 🟢 Everyone |
+> | 2. Pipeline Architecture | 🟢 Everyone |
+> | 3. Stage 1 & Stage 2 Prompt Design | 🟢 Everyone |
+> | 4. Stage 3 Quality Evaluation | 🔷 Technical — Python evaluation code |
+> | 5. Multi-Model Testing | 🟢 Everyone |
+> | 6. Grading Rubric | 🟢 Everyone |
+> | 7. Sample Test Transcript | 🟢 Everyone |
+> | 8. Submission Deliverables | 🟢 Everyone |
+> | Bonus Challenges | 🟢 Everyone / 🔷 Technical |
+
 ---
 
-## 🎯 Project Goal
+## 🟢 1. Project Goal
 
 **Input:** A raw, unedited 30-minute podcast transcript or interview. The transcript contains:
 - Casual speech fillers ("um," "uh," "you know," "like")
@@ -21,7 +34,7 @@ You will build a **production-grade, multi-stage prompt pipeline** that transfor
 
 ---
 
-## 🛠️ The Pipeline Architecture
+## 🟢 2. The Pipeline Architecture
 
 Design and implement a **3-stage pipeline** with one sequential step followed by three parallel branches:
 
@@ -40,7 +53,7 @@ graph TD
 
 ---
 
-## 📐 Detailed Stage Requirements
+## 🟢 3. Detailed Stage Requirements
 
 ### Stage 1: Cleanup, Delimiting & Topic Extraction
 
@@ -93,7 +106,9 @@ Using the clean output from Stage 1:
   - Persona B: "A technical team lead at a startup"
 - **Output:** Complete email newsletter with subject line, preview text, body, and CTA button text
 
-### Stage 3: Automated Quality Evaluation
+### 🔷 Stage 3: Automated Quality Evaluation
+
+*Non-technical readers: you can perform manual reviews instead of writing Python evaluation scripts for Stage 3.*
 
 After generating all three assets, run an automated evaluation:
 - **Use LLM-as-Judge** (from Lesson 4.2) with a *different* model than your generators
@@ -102,7 +117,7 @@ After generating all three assets, run an automated evaluation:
 
 ---
 
-## 🔄 Multi-Model Testing Requirement
+## 🟢 4. Multi-Model Testing Requirement
 
 **You must test your complete pipeline on at least two different LLM providers.** This is not optional — it's the most educational part of the project.
 
@@ -126,7 +141,7 @@ After running your pipeline on multiple providers, document:
 
 ---
 
-## 📐 Grading Rubric
+## 🟢 5. Grading Rubric
 
 | Category | Excellent (5pts) | Developing (3pts) | Needs Work (1pt) |
 |:---|:---|:---|:---|
@@ -139,7 +154,7 @@ After running your pipeline on multiple providers, document:
 
 ---
 
-## 📝 Sample Test Transcript
+## 🟢 6. Sample Test Transcript
 
 Use this short sample to test your pipeline (or use your own 30-minute transcript):
 
@@ -183,7 +198,7 @@ for up to 5 hosts. Enterprise plans include custom SLAs and dedicated support.
 
 ---
 
-## 🏁 Submission Deliverables
+## 🟢 7. Submission Deliverables
 
 1. **Prompt Definitions** — All system prompts and user prompt templates documented in an `.mdx` file with clear variable placeholders
 2. **Pipeline Code** — Python script implementing the full pipeline (can use any provider's SDK)
@@ -194,7 +209,7 @@ for up to 5 hosts. Enterprise plans include custom SLAs and dedicated support.
 
 ---
 
-## 💡 Bonus Challenges
+## 🟢 8. Bonus Challenges
 
 If you want to push your skills further:
 

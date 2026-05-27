@@ -8,9 +8,18 @@ Try feeding that conversational mush into `JSON.parse()`. Your code crashes. You
 
 This lesson is about forcing LLMs to output **structured, machine-readable data** — clean JSON, strict schemas, and formatted tables — every single time. We'll cover three progressively more reliable approaches: prompt-based formatting, native JSON mode, and structured output APIs with function calling.
 
+> **📍 Lesson Roadmap:**
+> | Section | Audience |
+> |:---|:---|
+> | 1. Prompt-Based JSON | 🟢 Everyone |
+> | 2. Native JSON Mode | 🔷 Technical — Python SDK code |
+> | 3. Structured Outputs & Function Calling | 🔷 Technical — Python SDK code |
+> | 4. Markdown Table Outputs | 🟢 Everyone |
+> | Concept Check | 🟢 Everyone |
+
 ---
 
-## 1. Level 1: Prompt-Based JSON (Works Everywhere, ~90% Reliable)
+## 🟢 1. Level 1: Prompt-Based JSON (Works Everywhere, ~90% Reliable)
 
 The simplest approach is to embed a JSON schema directly in your prompt and instruct the model to output *only* valid JSON:
 
@@ -69,7 +78,9 @@ Even with explicit instructions, models sometimes:
 
 ---
 
-## 2. Level 2: Native JSON Mode (~99% Reliable)
+## 🔷 2. Level 2: Native JSON Mode (~99% Reliable)
+
+*Non-technical readers: skip ahead to the [Markdown Table Outputs](#4-markdown-table-outputs) section below.*
 
 Most major providers now offer a **JSON Mode** that constrains the model's token generation to only produce valid JSON. This is more reliable than prompt-based approaches because the constraint happens at the model level, not just in the instructions.
 
@@ -114,7 +125,7 @@ response = client.models.generate_content(
 
 ---
 
-## 3. Level 3: Structured Outputs & Function Calling (100% Schema-Compliant)
+## 🔷 3. Level 3: Structured Outputs & Function Calling (100% Schema-Compliant)
 
 This is the gold standard. Instead of asking the model to produce JSON that matches a schema, you **enforce** the schema at the API level. The model's token generation is physically constrained to only produce output that conforms to your exact specification.
 
@@ -228,7 +239,7 @@ tool_result = response.content[0].input  # Dict matching your schema exactly
 
 ---
 
-## 4. Markdown Table Outputs
+## 🟢 4. Markdown Table Outputs
 
 Not everything needs to be JSON. For human-readable structured output, Markdown tables are excellent — and models are very good at generating them:
 
@@ -249,7 +260,7 @@ Widget Starter: Q1 $8,000 Q2 $15,000
 
 ---
 
-## ✍️ Concept Check
+## 🟢 Concept Check
 
 **Scenario:** You're building a production pipeline that processes 10,000 customer emails daily and stores extracted profiles in a database. You're using prompt-based JSON extraction (Level 1). About 8% of outputs fail `JSON.parse()` due to markdown code block wrapping or conversational preamble. What's the best fix?
 

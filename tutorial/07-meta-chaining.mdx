@@ -8,9 +8,19 @@ The model isn't failing because it's stupid — it's failing because you're aski
 
 **Meta-Prompting** takes it further: using AI to write, optimize, and improve your prompts themselves.
 
+> **📍 Lesson Roadmap:**
+> | Section | Audience |
+> |:---|:---|
+> | 1. Prompt Chaining & Pipelines | 🟢 Everyone |
+> | 2. Python Pipeline Example | 🔷 Technical — Python SDK code |
+> | 3. Branching & Parallel Pipelines | 🔷 Technical — Python with asyncio |
+> | 4. Meta-Prompting | 🟢 Everyone |
+> | 5. Orchestration Frameworks | 🟢 Everyone |
+> | Concept Check | 🟢 Everyone |
+
 ---
 
-## 1. Prompt Chaining: Linear Pipelines
+## 🟢 1. Prompt Chaining: Linear Pipelines
 
 Prompt Chaining is the practice of connecting multiple prompts in sequence, where the output of Prompt N becomes the input to Prompt N+1.
 
@@ -31,7 +41,9 @@ graph LR
 | **Flexibility** | Change one thing, rewrite the whole prompt | Swap or upgrade individual steps |
 | **Model routing** | Stuck with one model for everything | Use cheap models for simple steps, premium for complex ones |
 
-### Complete Python Pipeline Example
+## 🔷 2. Python Pipeline Example
+
+*Non-technical readers: skip ahead to [Meta-Prompting: AI That Writes Prompts](#4-meta-prompting-ai-that-writes-prompts) below.*
 
 Here's a real, working 3-stage pipeline using the OpenAI API:
 
@@ -101,7 +113,7 @@ print(blog_post)
 
 ---
 
-## 2. Branching Pipelines
+## 🔷 3. Branching & Parallel Pipelines
 
 Not all pipelines are linear. Sometimes Stage 1 feeds into multiple parallel Stage 2 prompts:
 
@@ -147,7 +159,7 @@ async def generate_all_assets(clean_transcript: str):
 
 ---
 
-## 3. Meta-Prompting: AI That Writes Prompts
+## 🟢 4. Meta-Prompting: AI That Writes Prompts
 
 **Meta-Prompting** is using an LLM to generate, critique, or optimize prompts. Instead of manually iterating on prompt wording, you ask a model to act as a "Prompt Engineer."
 
@@ -196,7 +208,7 @@ Then rewrite it as an improved version.
 
 ---
 
-## 4. Orchestration Frameworks
+## 🟢 5. Orchestration Frameworks
 
 For production pipelines, you don't need to write all the boilerplate yourself. Several frameworks handle prompt chaining, model routing, and error handling:
 
@@ -212,7 +224,7 @@ You don't *need* a framework — the raw API examples earlier in this lesson wor
 
 ---
 
-## ✍️ Concept Check
+## 🟢 Concept Check
 
 **Scenario:** You're processing 500 customer feedback surveys daily. The pipeline has 3 stages: (1) clean raw text, (2) classify sentiment, (3) generate a management summary. Stage 1 and 2 are straightforward; Stage 3 requires nuanced writing. You want to minimize API costs. What's the optimal model routing strategy?
 

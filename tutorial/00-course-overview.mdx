@@ -2,7 +2,29 @@
 
 Welcome to **Course 1: Prompt Engineering Mastery**. If you've been using ChatGPT, Claude, or Gemini like a fancy search engine — typing a question and hoping for a good answer — this course is going to change everything about how you work with AI.
 
-I designed this course after spending months watching teams waste hours on "prompt guessing" — trying random phrasings until the model accidentally gives them what they want. That's not engineering. That's gambling. By the end of this course, you'll treat prompts like code: structured, testable, version-controlled, and reproducible.
+I designed this course after spending months watching teams waste hours on "prompt guessing" — trying random phrasings until the model accidentally gives them what they want. That's not engineering. That's gambling. By the end of this course, you'll treat prompts like structured, testable, reproducible systems — whether you write code or not.
+
+---
+
+## 🧭 How to Navigate This Course — Tech vs. Non-Tech Tracks
+
+This course serves **both technical and non-technical professionals**. Every lesson contains sections for both audiences, clearly marked with badges:
+
+| Badge | Meaning | Who Should Read |
+|:---|:---|:---|
+| 🟢 **Core Concept** | Foundational ideas, frameworks, and techniques you can apply directly in ChatGPT, Claude, or Gemini's web interface | **Everyone** — these are the must-read sections |
+| 🔷 **Technical Deep-Dive** | Python API code, SDK syntax, automation scripts, and production architecture | **Developers & technical users** — non-technical readers can safely skip these without losing the thread |
+
+### If You're Non-Technical (Marketer, PM, Researcher, Analyst)
+- Read all 🟢 sections — they teach concepts, strategies, and prompt techniques using the chat UI
+- **Skip** 🔷 sections freely — they contain Python code and API integration details you don't need
+- You'll still learn 80%+ of the course content and be highly effective at prompt engineering
+
+### If You're Technical (Developer, Data Scientist, Engineer)
+- Read **everything** — both 🟢 and 🔷 sections
+- The 🟢 sections give you the *why* behind each technique
+- The 🔷 sections give you the *how* — production-ready code you can copy directly into your projects
+- Pay special attention to the multi-model API differences — they'll save you hours of debugging
 
 ---
 
@@ -14,16 +36,22 @@ Move past "simple chatting" into **systematic, predictable, and programmatic con
 
 ## 🧰 Prerequisites
 
-Before starting this course, you should have:
-
+### For Everyone (Non-Technical & Technical)
 - **Basic AI familiarity**: You've used at least one chatbot (ChatGPT, Claude, Gemini, etc.) for at least a few weeks
 - **A working account** on at least one LLM platform (free tiers are fine):
   - [ChatGPT](https://chat.openai.com) (OpenAI)
   - [Claude](https://claude.ai) (Anthropic)
   - [Gemini](https://gemini.google.com) (Google)
-- **Optional but recommended**: Basic Python knowledge for the API code examples. Don't worry — we explain every line.
+
+### For Technical Users Only (🔷 sections)
+- **Python 3.9+** installed on your machine
+- **Basic Python knowledge**: variables, functions, dictionaries, f-strings
+- **Familiarity with APIs**: You've made an API call before (REST, HTTP, or SDK)
+- **API keys** from at least one provider (OpenAI, Anthropic, or Google)
 
 > **💡 Pro Tip:** Create accounts on all three platforms. One of the most valuable skills in prompt engineering is understanding how the *same prompt behaves differently* across models. You'll be doing a lot of cross-model comparisons in this course.
+>
+> **Non-technical users:** You can do these comparisons entirely in the web chat UI — no code needed.
 
 ---
 
@@ -74,26 +102,27 @@ Find your professional role below to see how this course will directly transform
 
 ## 🗺️ Syllabus Outline
 
-The course is structured over **4 Weeks** (2 lessons per week), plus a hands-on capstone:
+The course is structured over **4 Weeks** (2 lessons per week), plus a hands-on capstone.
+Each lesson shows which sections are 🟢 Core (everyone) and 🔷 Technical (developers only).
 
 ### Module 1: The Core Mechanics (Week 1)
-* [Lesson 1.1: Under the Hood of an LLM](./01-under-the-hood.mdx) — Tokens, context windows, temperature, Top-P — and how they differ across GPT, Claude, and Gemini.
-* [Lesson 1.2: The Anatomy of a Perfect Prompt](./02-anatomy-perfect-prompt.mdx) — The 4-pillar framework: Role, Context, Task, Constraints. Real API syntax for all major providers.
+* [Lesson 1.1: Under the Hood of an LLM](./01-under-the-hood.mdx) — 🟢 Tokens, context windows, temperature, Top-P. 🔷 API parameter syntax for OpenAI, Claude, and Gemini.
+* [Lesson 1.2: The Anatomy of a Perfect Prompt](./02-anatomy-perfect-prompt.mdx) — 🟢 The 4-pillar framework. 🔷 Real API code showing how each provider handles system/user prompts.
 
 ### Module 2: Advanced Prompt Architectures (Week 2)
-* [Lesson 2.1: Few-Shot Prompting & In-Context Learning](./03-few-shot-prompting.mdx) — Programming by example. How each model prefers its examples formatted.
-* [Lesson 2.2: Reasoned Prompting (Chain of Thought)](./04-reasoned-prompting.mdx) — Step-by-step reasoning, Tree of Thoughts, and dedicated reasoning models (o3, Claude's extended thinking, Gemini's thinking mode).
+* [Lesson 2.1: Few-Shot Prompting & In-Context Learning](./03-few-shot-prompting.mdx) — 🟢 Programming by example, designing high-quality examples. 🔷 Model-specific API code for few-shot formatting.
+* [Lesson 2.2: Reasoned Prompting (Chain of Thought)](./04-reasoned-prompting.mdx) — 🟢 Step-by-step reasoning, Tree of Thoughts. 🔷 Reasoning model APIs (o3, extended thinking, Gemini thinking mode).
 
 ### Module 3: Security, Structure & Output Control (Week 3)
-* [Lesson 3.1: Delimiters, System Prompts, and Guardrails](./05-delimiters-guardrails.mdx) — Prompt injection defense, system prompt engineering, and advanced security techniques.
-* [Lesson 3.2: Programmatic Outputs (JSON, Schemas & Function Calling)](./06-programmatic-outputs.mdx) — Structured output APIs, function calling, and guaranteed-valid JSON across providers.
+* [Lesson 3.1: Delimiters, System Prompts, and Guardrails](./05-delimiters-guardrails.mdx) — 🟢 Prompt injection defense, delimiter design, guardrail checklists. 🔷 System prompt API syntax, canary tokens, input sanitization code.
+* [Lesson 3.2: Programmatic Outputs (JSON, Schemas & Function Calling)](./06-programmatic-outputs.mdx) — 🟢 Prompt-based JSON extraction. 🔷 Structured output APIs, function calling, Pydantic schemas.
 
 ### Module 4: Real-World Scaling & Optimization (Week 4)
-* [Lesson 4.1: Meta-Prompting & Prompt Chaining](./07-meta-chaining.mdx) — Linear pipelines, model routing, orchestration frameworks, and AI-generated prompts.
-* [Lesson 4.2: Evaluation & Iteration](./08-evaluation-iteration.mdx) — Prompt matrices, LLM-as-Judge, regression testing, and A/B testing your prompts.
+* [Lesson 4.1: Meta-Prompting & Prompt Chaining](./07-meta-chaining.mdx) — 🟢 Chaining concepts, meta-prompting. 🔷 Python pipeline code, async branching, orchestration frameworks.
+* [Lesson 4.2: Evaluation & Iteration](./08-evaluation-iteration.mdx) — 🟢 Evaluation matrices, prompt regression concepts. 🔷 LLM-as-Judge code, A/B testing, automated metrics.
 
 ### 🎓 Capstone Project
-* [The Automated Enterprise Content Engine](./09-capstone-project.mdx) — Build a multi-stage prompt pipeline that transforms an audio transcript into blog posts, social hooks, and personalized newsletters — tested across multiple models.
+* [The Automated Enterprise Content Engine](./09-capstone-project.mdx) — 🟢 Design the prompt pipeline and template structure. 🔷 Implement it in Python, run multi-model comparisons, automate evaluation.
 
 ---
 

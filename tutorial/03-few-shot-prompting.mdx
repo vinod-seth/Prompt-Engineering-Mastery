@@ -6,9 +6,19 @@ The solution? Stop explaining. Start *showing*.
 
 **In-Context Learning (ICL)** — commonly called **Few-Shot Prompting** — is one of the most powerful techniques in your toolkit. Instead of describing what you want in words, you provide concrete examples of input-output pairs. The model pattern-matches against your examples and applies the same transformation to new inputs.
 
+> **📍 Lesson Roadmap:**
+> | Section | Audience |
+> |:---|:---|
+> | 1. Zero-Shot vs. Few-Shot | 🟢 Everyone |
+> | 2. When to Use Few-Shot | 🟢 Everyone |
+> | 3. Designing High-Quality Examples | 🟢 Everyone |
+> | 4. Model-Specific Few-Shot Behavior | 🔷 Technical — Python SDK code |
+> | 5. How Many Shots | 🟢 Everyone |
+> | Concept Check | 🟢 Everyone |
+
 ---
 
-## 1. The Spectrum: Zero-Shot → One-Shot → Few-Shot
+## 🟢 1. The Spectrum: Zero-Shot → One-Shot → Few-Shot
 
 | Approach | Examples Provided | Best For |
 |:---|:---|:---|
@@ -53,7 +63,7 @@ Notice how the few-shot version implicitly teaches the model:
 
 ---
 
-## 2. When to Reach for Few-Shot Prompting
+## 🟢 2. When to Reach for Few-Shot Prompting
 
 In my experience, few-shot prompting beats zero-shot in three situations:
 
@@ -67,7 +77,7 @@ In my experience, few-shot prompting beats zero-shot in three situations:
 
 ---
 
-## 3. Designing High-Quality Examples
+## 🟢 3. Designing High-Quality Examples
 
 Not all examples are created equal. Here's what separates good few-shot examples from ones that actually hurt performance:
 
@@ -84,7 +94,9 @@ Not all examples are created equal. Here's what separates good few-shot examples
 
 ---
 
-## 🔄 Model-Specific Few-Shot Behavior
+## 🔷 4. Model-Specific Few-Shot Behavior
+
+*Non-technical readers: skip ahead to the [Concept Check](#concept-check) below.*
 
 Here's something most tutorials won't tell you: each model family has preferences for *how* examples are formatted. Using the right format can meaningfully improve accuracy.
 
@@ -171,7 +183,7 @@ response = client.models.generate_content(
 
 ---
 
-## 4. How Many Shots Do You Need?
+## 🟢 5. How Many Shots Do You Need?
 
 This depends on task complexity. Here's a practical guideline:
 
@@ -185,7 +197,7 @@ This depends on task complexity. Here's a practical guideline:
 
 ---
 
-## ✍️ Concept Check
+## 🟢 Concept Check
 
 **Scenario:** You've built a few-shot classifier for support tickets with 3 examples — all categorized as `[Technical]`. When you send a billing-related ticket, the model still outputs `[Technical]`. What's the most likely cause?
 
