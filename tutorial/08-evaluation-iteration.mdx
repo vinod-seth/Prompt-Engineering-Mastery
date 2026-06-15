@@ -1,6 +1,6 @@
 # Lesson 4.2: Evaluation & Iteration
 
-Here's an uncomfortable truth that most prompt engineering tutorials skip: **a prompt that works perfectly on your 5 test cases will fail on real-world data**. I've seen it happen dozens of times — someone spends hours crafting a beautiful prompt, tests it on 3-4 hand-picked examples, declares victory, and deploys. Within a week, they're drowning in edge cases: non-English inputs, empty fields, sarcastic customers, PDF scans with OCR errors, and inputs that the model simply hallucinates on.
+An uncomfortable truth that most prompt engineering tutorials skip: **a prompt that works perfectly on your 5 test cases will fail on real-world data**. It happens all the time — someone spends hours crafting a beautiful prompt, tests it on 3-4 hand-picked examples, declares victory, and deploys. Within a week, they're drowning in edge cases: non-English inputs, empty fields, sarcastic customers, PDF scans with OCR errors, and inputs that the model simply hallucinates on.
 
 The difference between an amateur and a professional prompt engineer is not the quality of their first draft — it's their **evaluation and iteration discipline**. This lesson teaches you how to systematically test, score, and improve prompts before (and after) they hit production.
 
@@ -147,8 +147,8 @@ Respond ONLY with JSON: {{"accuracy": int, "completeness": int, "formatting": in
 
 | Generator | Recommended Judge | Why |
 |:---|:---|:---|
-| GPT-4o | Claude Sonnet 4 | Claude excels at careful, critical analysis |
-| Claude Sonnet 4 | GPT-4o | GPT catches formatting issues Claude might miss |
+| GPT-4o | Claude 3.5 Sonnet | Claude excels at careful, critical analysis |
+| Claude 3.5 Sonnet | GPT-4o | GPT catches formatting issues Claude might miss |
 | Gemini 2.5 Pro | GPT-4o or Claude | Cross-architecture perspective |
 | Any model | Gemini 2.5 Flash | Fast and cheap for bulk evaluation |
 

@@ -193,7 +193,7 @@ import anthropic
 
 client = anthropic.Anthropic()
 response = client.messages.create(
-    model="claude-sonnet-4-20250514",
+    model="claude-3-5-sonnet-latest",
     max_tokens=1024,
     temperature=0.0,
     system="Extract customer details from emails using the provided tool.",

@@ -9,10 +9,10 @@
 ## Models Covered
 
 This course provides concrete examples and behavioral comparisons for:
-- **OpenAI** — GPT-4o, GPT-4.1, o3/o4-mini (reasoning models)
-- **Anthropic** — Claude Sonnet 4, Claude Opus 4 (extended thinking)
+- **OpenAI** — GPT-4o, GPT-4o-mini, o3/o3-mini (reasoning models)
+- **Anthropic** — Claude 3.5 Sonnet, Claude 3 Opus (extended thinking)
 - **Google** — Gemini 2.5 Pro, Gemini 2.5 Flash (massive context, multimodal)
-- **Meta** — Llama 4 (open-source)
+- **Meta** — Llama 3.1 (open-source, 8B/70B/405B)
 - **Mistral** — Mistral Large, Codestral
 
 ## Curriculum

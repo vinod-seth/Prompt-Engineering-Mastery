@@ -1,8 +1,8 @@
 # Lesson 1.2: The Anatomy of a Perfect Prompt
 
-Here's a hard truth I learned the painful way: if you write prompts like you're texting a friend or typing into Google, you'll get inconsistent, unpredictable garbage about 60% of the time. The other 40%? Lucky accidents you can't reproduce.
+If you write prompts like you're texting a friend or typing into Google, you'll get inconsistent, unpredictable results about 60% of the time. The other 40%? Lucky accidents you can't reproduce.
 
-The fix is deceptively simple. Every reliable prompt — whether you're using ChatGPT, Claude, Gemini, or an open-source model — can be decomposed into **four structural pillars**. Master these four, and you stop guessing and start engineering.
+The fix is straightforward. Every reliable prompt — whether you're using ChatGPT, Claude, Gemini, or an open-source model — can be decomposed into **four structural pillars**. Master these four, and you stop guessing and start engineering.
 
 **📍 Lesson Roadmap:**
 
@@ -76,7 +76,7 @@ CONSTRAINTS:
 
 Each major provider structures the Role/Context/Task separation differently in their API. Understanding this is essential for writing portable prompts.
 
-### OpenAI (GPT-4o, GPT-4.1)
+### OpenAI (GPT-4o)
 OpenAI uses a **messages array** with explicit `system`, `user`, and `assistant` roles:
 
 ```python
@@ -108,7 +108,7 @@ Extract all action items with assignees and deadlines."""
 )
 ```
 
-### Anthropic (Claude Sonnet 4, Claude Opus 4)
+### Anthropic (Claude 3.5 Sonnet, Claude 3 Opus)
 Claude uses a dedicated `system` parameter (not inside the messages array) and strongly prefers **XML-tagged structure**:
 
 ```python
@@ -116,7 +116,7 @@ import anthropic
 client = anthropic.Anthropic()
 
 response = client.messages.create(
-    model="claude-sonnet-4-20250514",
+    model="claude-3-5-sonnet-latest",
     max_tokens=1024,
     temperature=0.0,
     system="""You are a senior technical project manager.

@@ -1,6 +1,6 @@
 # Lesson 1.1: Under the Hood of an LLM
 
-Before you can command a Large Language Model, you need to understand what it actually *is* — and more importantly, what it *isn't*. An LLM is not a database. It's not a search engine. It doesn't "know" things the way you do. It's a **probabilistic token prediction engine** — a very sophisticated autocomplete that predicts the most likely next piece of text given everything that came before it.
+An LLM is not a database. It's not a search engine. It doesn't "know" things the way you do. It's a **probabilistic token prediction engine** — a very sophisticated autocomplete that predicts the most likely next piece of text given everything that came before it.
 
 That distinction matters because it explains *why* prompts work the way they do, and why a small change in wording can completely change the output.
 
@@ -51,10 +51,10 @@ Think of it like a desk: the bigger the desk, the more documents you can spread 
 | Model | Context Window | What That Looks Like |
 |:---|:---|:---|
 | **GPT-4o** (OpenAI) | 128K tokens | ~96,000 words / ~300 pages |
-| **GPT-4.1** (OpenAI) | 1M tokens | ~750,000 words / ~2,500 pages |
-| **Claude Sonnet 4** (Anthropic) | 200K tokens | ~150,000 words / ~500 pages |
+| **o1** (OpenAI) | 200K tokens | ~150,000 words / ~500 pages |
+| **Claude 3.5 Sonnet** (Anthropic) | 200K tokens | ~150,000 words / ~500 pages |
 | **Gemini 2.5 Pro** (Google) | 1M tokens | ~750,000 words / ~2,500 pages |
-| **Llama 4 Scout** (Meta) | 10M tokens | ~7.5M words (with 16 experts) |
+| **Llama 3.1 405B** (Meta) | 128K tokens | ~96,000 words / ~300 pages |
 | **Mistral Large** (Mistral) | 128K tokens | ~96,000 words / ~300 pages |
 
 > **💡 Pro Tip:** A bigger context window doesn't always mean better performance. Models can struggle with "lost in the middle" problems — where information buried in the center of a long document gets less attention than information at the beginning or end. Claude and Gemini are generally better at long-context fidelity than older GPT models, but always test with your specific use case.
@@ -129,7 +129,7 @@ import anthropic
 client = anthropic.Anthropic()
 
 response = client.messages.create(
-    model="claude-sonnet-4-20250514",
+    model="claude-3-5-sonnet-latest",
     max_tokens=1024,
     temperature=0.0,  # Range: 0.0 to 1.0
     system="You are a data extraction assistant.",
@@ -154,6 +154,30 @@ response = client.models.generate_content(
     }
 )
 ```
+
+---
+
+## 🟢 4. Prompt Caching: Cutting Costs on Repeated Calls
+
+When you use long system prompts, large few-shot example sets, or process many inputs with the same instructions, you end up sending the same token prefix to the API thousands of times — and paying for it every time.
+
+**Prompt caching** solves this. Providers cache the processed prefix of your prompt so that subsequent requests with the same prefix are served faster and cheaper.
+
+### How It Works
+
+- **Anthropic:** Automatically caches prompt prefixes. If your system prompt + few-shot examples are identical between requests, subsequent calls can be up to **90% cheaper** and **85% faster**. You can add explicit cache breakpoints using the `cache_control` parameter in messages.
+- **Google Gemini:** Offers explicit **Context Caching** via the API. You create a cached context object and reference it in subsequent requests. Cached tokens are billed at a reduced rate.
+- **OpenAI:** Automatically caches prompt prefixes for most models. Cached input tokens are billed at **50% of the standard rate**.
+
+### When to Use Prompt Caching
+
+| Scenario | Caching Benefit |
+|:---|:---|
+| Same system prompt + 10 few-shot examples across 1,000 requests | Massive cost savings — the prefix is processed once |
+| Long reference document included in every API call | Reduces latency from seconds to sub-second |
+| Batch processing with identical instructions but different inputs | Up to 90% cost reduction on the instruction portion |
+
+> **💡 Pro Tip:** Structure your prompts so the static parts (system instruction, few-shot examples, reference documents) come *first*, and the variable parts (user input) come *last*. This maximizes the cacheable prefix length.
 
 ---
 

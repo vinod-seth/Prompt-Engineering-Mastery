@@ -1,6 +1,6 @@
 # Lesson 4.1: Meta-Prompting & Prompt Chaining
 
-Here's a pattern I see constantly: someone asks a model to take a 30-minute meeting transcript and simultaneously clean it up, extract action items, write a summary blog post, generate social media hooks, AND draft a follow-up email. The result? A mediocre blob that does everything poorly and nothing well.
+A pattern that shows up constantly: someone asks a model to take a 30-minute meeting transcript and simultaneously clean it up, extract action items, write a summary blog post, generate social media hooks, AND draft a follow-up email. The result? A mediocre blob that does everything poorly and nothing well.
 
 The model isn't failing because it's stupid — it's failing because you're asking it to juggle five cognitive tasks in a single context window. Imagine asking a human to simultaneously translate a document, fact-check it, redesign its layout, write a cover letter about it, AND compose a tweet — all at the same time, on one sheet of paper.
 
@@ -148,11 +148,21 @@ async def run_prompt_async(system: str, user_input: str, model: str = "gpt-4o", 
 
 async def generate_all_assets(clean_transcript: str):
     # Run 3 generators in parallel — much faster than sequential
-    blog, hooks, newsletter = await asyncio.gather(
+    # return_exceptions=True prevents one failure from crashing the entire pipeline
+    results = await asyncio.gather(
         run_prompt_async(system="Write a 600-word blog post...", user_input=clean_transcript, temp=0.7),
         run_prompt_async(system="Generate 5 social media hooks as JSON...", user_input=clean_transcript),
         run_prompt_async(system="Write an email newsletter...", user_input=clean_transcript, temp=0.5),
+        return_exceptions=True  # Catch individual failures without killing all tasks
     )
+    
+    # Check each result for errors
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            print(f"Stage 2 branch {i} failed: {result}")
+            results[i] = None  # Replace with None or a fallback
+    
+    blog, hooks, newsletter = results
     return blog, hooks, newsletter
 ```
 

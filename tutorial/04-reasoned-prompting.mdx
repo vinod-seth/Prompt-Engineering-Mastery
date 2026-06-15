@@ -1,6 +1,6 @@
 # Lesson 2.2: Reasoned Prompting (Chain of Thought)
 
-Here's a failure mode that trips up almost everyone when they first start using LLMs for anything beyond simple Q&A: you ask the model a question that requires logical reasoning, and it confidently gives you the wrong answer.
+A common failure mode when using LLMs for anything beyond simple Q&A: you ask the model a question that requires logical reasoning, and it confidently gives you the wrong answer.
 
 Why? Because LLMs don't *think* before they speak. They predict the next token based on pattern matching — they're autocomplete engines, not calculators. If you ask "What's 17 × 24?" and demand a single number, the model might output "408" (correct) or "388" (wrong) with equal confidence. It never actually performed multiplication — it guessed based on patterns it saw during training.
 
@@ -121,16 +121,16 @@ This prevents the model from locking into the first idea that comes to mind — 
 
 Here's where things get really interesting. Some modern models now have **built-in reasoning capabilities** — they automatically "think" before responding, without you needing to prompt for it. Understanding when to use prompted CoT vs. built-in reasoning is a key skill.
 
-### OpenAI's Reasoning Models (o3, o4-mini)
+### OpenAI's Reasoning Models (o3, o3-mini)
 OpenAI's o-series models perform internal chain-of-thought reasoning **automatically**. You don't need to say "think step by step" — in fact, it can hurt performance:
 
 ```python
 from openai import OpenAI
 client = OpenAI()
 
-# With o3/o4-mini: DON'T add "think step by step" — it's redundant
+# With o3/o3-mini: DON'T add "think step by step" — it's redundant
 response = client.chat.completions.create(
-    model="o3",  # or "o4-mini" for faster/cheaper reasoning
+    model="o3",  # or "o3-mini" for faster/cheaper reasoning
     messages=[
         {"role": "user", "content": """A department requested $45,000 for a server.
 IT budget remaining: $120,000. Previous approvals this quarter: $82,000.
@@ -150,7 +150,7 @@ import anthropic
 client = anthropic.Anthropic()
 
 response = client.messages.create(
-    model="claude-sonnet-4-20250514",
+    model="claude-3-5-sonnet-latest",
     max_tokens=8000,
     temperature=1,  # Required for extended thinking
     thinking={
@@ -194,7 +194,7 @@ response = client.models.generate_content(
 | Scenario | Best Approach | Why |
 |:---|:---|:---|
 | Simple math/logic | Zero-Shot CoT ("think step by step") on GPT-4o/Claude/Gemini | Cheap and effective |
-| Complex multi-step reasoning | o3 / o4-mini (OpenAI) or Extended Thinking (Claude) | Built-in reasoning is more reliable than prompted CoT |
+| Complex multi-step reasoning | o3 / o3-mini (OpenAI) or Extended Thinking (Claude) | Built-in reasoning is more reliable than prompted CoT |
 | Strategic planning with alternatives | Tree of Thoughts prompt on any model | Forces exploration of multiple options |
 | Tight budget, many queries | Standard model + prompted CoT | Reasoning models cost 5-20× more per query |
 | Coding/debugging | o3 or Claude with extended thinking | These tasks benefit most from deep reasoning |
