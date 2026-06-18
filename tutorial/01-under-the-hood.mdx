@@ -178,6 +178,8 @@ When you use long system prompts, large few-shot example sets, or process many i
 | Batch processing with identical instructions but different inputs | Up to 90% cost reduction on the instruction portion |
 
 > **💡 Pro Tip:** Structure your prompts so the static parts (system instruction, few-shot examples, reference documents) come *first*, and the variable parts (user input) come *last*. This maximizes the cacheable prefix length.
+>
+> **🔷 Developer Note:** For step-by-step Python code implementing prompt caching (with Anthropic's message breakpoints and Google's context caching), see [Lesson 2.1: Model-Specific API Code](./03-few-shot-prompting.mdx#implementing-prompt-caching-in-code).
 
 ---
 

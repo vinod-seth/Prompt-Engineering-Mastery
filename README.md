@@ -23,6 +23,7 @@ This course provides concrete examples and behavioral comparisons for:
 | 1 | [1.2](./tutorial/02-anatomy-perfect-prompt.mdx) | The Anatomy of a Perfect Prompt — 4-Pillar Framework |
 | 2 | [2.1](./tutorial/03-few-shot-prompting.mdx) | Few-Shot Prompting & In-Context Learning |
 | 2 | [2.2](./tutorial/04-reasoned-prompting.mdx) | Reasoned Prompting — Chain of Thought, Tree of Thoughts, Reasoning Models |
+| 2 | [2.3](./tutorial/04b-rag-prompting.mdx) | RAG-Specific Prompting — Grounding, Citation & Conflict Resolution |
 | 3 | [3.1](./tutorial/05-delimiters-guardrails.mdx) | Delimiters, System Prompts, and Guardrails |
 | 3 | [3.2](./tutorial/06-programmatic-outputs.mdx) | Programmatic Outputs — JSON, Schemas & Function Calling |
 | 4 | [4.1](./tutorial/07-meta-chaining.mdx) | Meta-Prompting & Prompt Chaining |

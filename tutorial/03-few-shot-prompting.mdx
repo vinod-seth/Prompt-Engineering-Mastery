@@ -182,6 +182,84 @@ response = client.models.generate_content(
 
 ---
 
+<a id="implementing-prompt-caching-in-code"></a>
+### 🔷 4.1 Implementing Prompt Caching in Code
+
+To save costs and reduce latency when using large instruction sets or dozens of few-shot examples, you can enable caching via API parameters.
+
+#### 1. Anthropic Claude (Explicit Breakpoints)
+Anthropic requires you to define explicit **cache breakpoints** using the `cache_control` parameter. Because strings cannot hold metadata, you must format your `system` prompt or `messages` as a list of content blocks rather than a single string:
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+response = client.messages.create(
+    model="claude-3-5-sonnet-20241022",
+    max_tokens=1024,
+    # System instructions formatted as a block list to support cache_control
+    system=[
+        {
+            "type": "text",
+            "text": "You are a customer service assistant with 50 rules and 10 few-shot examples...",
+            "cache_control": {"type": "ephemeral"} # Caches system instructions
+        }
+    ],
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Here is the support ticket data: [User Input Data...]",
+                    # No cache_control here, since the input data changes every request
+                }
+            ]
+        }
+    ]
+)
+```
+
+#### 2. Google Gemini (Explicit Context Caching)
+Google Gemini uses a two-step context caching mechanism. First, you create a cached content resource using the API. Then, you pass its unique resource identifier to your generation request:
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client()
+
+# Step 1: Create the cache object with static reference documents or few-shot lists
+cached_resource = client.caches.create(
+    model="gemini-2.5-pro",
+    config=types.CreateCachedContentConfig(
+        contents=[
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text="[Insert 20+ detailed few-shot examples or large reference documents here]")]
+            )
+        ],
+        ttl="600s", # Cache expires after 10 minutes of inactivity
+    )
+)
+
+# Step 2: Reference the cached resource by its name in subsequent requests
+response = client.models.generate_content(
+    model="gemini-2.5-pro",
+    contents="Process this ticket: [New User Input]",
+    config=types.GenerateContentConfig(
+        system_instruction="You are a helpful categorizer.",
+        cached_content=cached_resource.name # Pass the cache resource name
+    )
+)
+```
+
+#### 3. OpenAI (Automatic Prefix Caching)
+Unlike Claude and Gemini, OpenAI does not require any code modifications. If you use `gpt-4o` or `gpt-4o-mini` and your prompt prefix is **1,024 tokens or longer**, OpenAI automatically caches it. You can check the cache usage in the API response details (`usage.prompt_tokens_details.cached_tokens`).
+
+---
+
 ## 🟢 5. How Many Shots Do You Need?
 
 This depends on task complexity. Here's a practical guideline:
