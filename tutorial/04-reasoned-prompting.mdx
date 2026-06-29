@@ -1,5 +1,8 @@
 # Lesson 2.2: Reasoned Prompting (Chain of Thought)
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Prompt-Engineering-Mastery/blob/main/tutorial/04-reasoned-prompting.mdx)
+
+
 A common failure mode when using LLMs for anything beyond simple Q&A: you ask the model a question that requires logical reasoning, and it confidently gives you the wrong answer.
 
 Why? Because LLMs don't *think* before they speak. They predict the next token based on pattern matching — they're autocomplete engines, not calculators. If you ask "What's 17 × 24?" and demand a single number, the model might output "408" (correct) or "388" (wrong) with equal confidence. It never actually performed multiplication — it guessed based on patterns it saw during training.

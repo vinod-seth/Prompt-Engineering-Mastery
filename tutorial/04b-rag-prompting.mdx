@@ -1,5 +1,8 @@
 # Lesson 2.3: RAG-Specific Prompting & Grounding
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Prompt-Engineering-Mastery/blob/main/tutorial/04b-rag-prompting.mdx)
+
+
 In a production environment, you rarely ask an LLM to generate answers purely from its pre-trained weights. Instead, you build **Retrieval-Augmented Generation (RAG)** pipelines that query a database for relevant documents, paste those documents into the prompt, and ask the model to synthesize an answer.
 
 However, LLMs are naturally conversational and eager to please. If the retrieved documents do not contain the answer, or if the documents contradict each other, standard prompts often lead the model to hallucinate or fall back on its pre-trained memory. 
