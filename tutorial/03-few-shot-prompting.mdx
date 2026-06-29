@@ -309,3 +309,126 @@ This depends on task complexity. Here's a practical guideline:
 Few-shot prompting programs the model through pattern matching. But what about tasks that require *reasoning* — multi-step logic, math, or planning? For those, you need to teach the model to *think out loud* before answering. That's Chain-of-Thought prompting.
 
 * [Lesson 2.2: Reasoned Prompting (Chain of Thought) →](./04-reasoned-prompting.mdx)
+---
+
+## 📝 Chapter Quiz
+
+**Question 1:** What is the primary goal of Few-Shot Prompting in Generative AI development?
+
+* [ ] To modify model weights directly
+* [x] To design effective inputs that guide Large Language Models to produce accurate, context-aware responses
+* [ ] To build hardware GPU clusters
+* [ ] To train models from scratch
+
+<details>
+<summary>🔑 Click to Reveal Answer & Explanation</summary>
+
+**Correct Answer:** To design effective inputs that guide Large Language Models to produce accurate, context-aware responses
+
+**Explanation:** Few-Shot Prompting optimizes communication with LLMs without retraining underlying parameters.
+</details>
+
+**Question 2:** Which prompting technique involves providing explicit input-output examples inside the prompt?
+
+* [ ] Zero-Shot Prompting
+* [x] Few-Shot Prompting
+* [ ] Meta Prompting
+* [ ] Negative Prompting
+
+<details>
+<summary>🔑 Click to Reveal Answer & Explanation</summary>
+
+**Correct Answer:** Few-Shot Prompting
+
+**Explanation:** Few-Shot prompting supplies concrete demonstration pairs to guide model formatting and reasoning style.
+</details>
+
+**Question 3:** What does the phrase 'Let's think step by step' trigger when added to a prompt?
+
+* [ ] Random generation
+* [x] Zero-Shot Chain-of-Thought reasoning
+* [ ] Model shutdown
+* [ ] JSON extraction mode
+
+<details>
+<summary>🔑 Click to Reveal Answer & Explanation</summary>
+
+**Correct Answer:** Zero-Shot Chain-of-Thought reasoning
+
+**Explanation:** This phrase encourages models to generate intermediate reasoning steps, improving complex problem-solving accuracy.
+</details>
+
+**Question 4:** Why are XML tags or clear delimiters used in structured prompts?
+
+* [ ] To make prompts look longer
+* [x] To clearly delineate system instructions, user context, and untrusted inputs for security and clarity
+* [ ] To compile code to HTML
+* [ ] They are ignored by models
+
+<details>
+<summary>🔑 Click to Reveal Answer & Explanation</summary>
+
+**Correct Answer:** To clearly delineate system instructions, user context, and untrusted inputs for security and clarity
+
+**Explanation:** Delimiters isolate input sections, preventing ambiguity and protecting against prompt injection.
+</details>
+
+**Question 5:** What is an LLM 'hallucination'?
+
+* [ ] Fast token generation
+* [x] A response where the model generates plausible-sounding but factually incorrect or ungrounded information
+* [ ] A network connection error
+* [ ] An API rate limit error
+
+<details>
+<summary>🔑 Click to Reveal Answer & Explanation</summary>
+
+**Correct Answer:** A response where the model generates plausible-sounding but factually incorrect or ungrounded information
+
+**Explanation:** Hallucinations occur when models output incorrect information with high confidence due to probabilistic token generation.
+</details>
+
+**Question 6:** Which decoding hyperparameter controls randomness and creativity in model output?
+
+* [ ] max_tokens
+* [x] Temperature
+* [ ] frequency_penalty
+* [ ] presence_penalty
+
+<details>
+<summary>🔑 Click to Reveal Answer & Explanation</summary>
+
+**Correct Answer:** Temperature
+
+**Explanation:** Temperature scales logit probabilities; lower values produce deterministic output, higher values increase variety.
+</details>
+
+**Question 7:** What is Retrieval-Augmented Generation (RAG)?
+
+* [ ] Fine-tuning models on raw text
+* [x] Dynamically fetching relevant documents from external data stores and injecting them into the LLM prompt context
+* [ ] Compressing prompt text into zip files
+* [ ] Generating images from prompts
+
+<details>
+<summary>🔑 Click to Reveal Answer & Explanation</summary>
+
+**Correct Answer:** Dynamically fetching relevant documents from external data stores and injecting them into the LLM prompt context
+
+**Explanation:** RAG enhances model accuracy by grounding responses in external, real-time authoritative knowledge bases.
+</details>
+
+**Question 8:** How can developer teams ensure structured JSON output from LLM API calls?
+
+* [ ] Hoping the model formats it correctly
+* [x] Enforcing Structured Outputs via Pydantic schemas or API function calling features
+* [ ] Increasing temperature to maximum
+* [ ] Using short prompts
+
+<details>
+<summary>🔑 Click to Reveal Answer & Explanation</summary>
+
+**Correct Answer:** Enforcing Structured Outputs via Pydantic schemas or API function calling features
+
+**Explanation:** Constrained decoding and Function Calling APIs guarantee that outputs strictly adhere to target JSON schemas.
+</details>
